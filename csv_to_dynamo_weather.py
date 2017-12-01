@@ -27,8 +27,6 @@ with open(weather_csv) as csv_file:
     tokens = csv.reader(csv_file)
     # read first line in file which contains dynamo db field names
     header = tokens.next()
-    # read second line in file which contains dynamo db field data types
-    headerFormat = tokens.next()
     # rest of file contain new records
     for token in tokens:
         item = {}
