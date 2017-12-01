@@ -20,7 +20,7 @@ dynamodb = boto3.resource('dynamodb', aws_access_key_id=AWS_KEY,
 
 table = dynamodb.Table('ChicagoWeather')
 
-weather_csv = '/Users/stb/Dropbox/ECE_4813/project/weather.csv'
+weather_csv = '/Users/stb/Desktop/ece_4813_proj/weather.csv'
 
 # write records to dynamo db
 with open(weather_csv) as csv_file:
@@ -36,10 +36,11 @@ with open(weather_csv) as csv_file:
                     key = header[i]
                     if 'T' in val:
                         val = 0
+                    elif 'M' in val:
+                        raise Exception('Missing Data')
                     item[key] = val
-            print(item)
             table.put_item(Item = item)
         except:
-            print("Had missing data!")
+            pass
 
     time.sleep(0.01) # to accomodate max write provisioned capacity for table
