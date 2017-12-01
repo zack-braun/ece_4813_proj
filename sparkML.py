@@ -49,6 +49,13 @@ crimedataList = []
 if len(items) > 0:
   for item in items:
     data = {}
+    keys = item.keys()
+    for key in keys:
+        if key == 'Date':
+            data[key] = str(item[key])
+        else:
+            data[key] = int(item[key])
+    '''
     data["Date"] = str(item["Date"])
     data["Location: ALLEY"] = int(item["Location: ALLEY"])
     data["Location: ALLEY"] = int(item["Location: APARTMENT"])
@@ -69,6 +76,7 @@ if len(items) > 0:
     data["Location: STREET"] = int(item["Location: STREET"])
     data["Location: VEHICLE NON-COMMERCIAL"] = int(item["Location: VEHICLE NON-COMMERCIAL"])
     data["Total Crimes"] = int(item["Total Crimes"])
+    '''
   crimedataList.append(data)
 
 # Build the SparkSession
