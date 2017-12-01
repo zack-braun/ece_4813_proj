@@ -1,9 +1,12 @@
 from pyspark.mllib.linalg import SparseVector
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.sql import SparkSession
+from pyspark.sql import Row
+from pyspark.sql.types import *
 
-#read in data
-rdd = sc.textFile('~/Desktop/ece_4813_proj/weather.csv')
+
+
+weatherFilename = 'weather.csv'
 
 
 
@@ -16,10 +19,26 @@ spark = SparkSession.builder \
 
 sc = spark.sparkContext
 
-# Create a labeled point with a positive label and a dense feature vector.
-pos = LabeledPoint(1.0, [1.0, 0.0, 3.0])
+#read in data
+rdd = spark.read.csv(
+    weatherFilename, header=True
+)
 
-# Create a labeled point with a negative label and a sparse feature vector.
-neg = LabeledPoint(0.0, SparseVector(3, [0, 2], [1.0, 3.0]))
 
-rdd1 = sparkContext.parallelize([('a',7),('a',2),('b',2)])
+# Inspect the first 2 lines
+print rdd.take(2)
+
+# Map the RDD to a DF
+df = df.rdd.map(lambda line: Row(date=line[0],
+                              Tmax=line[1],
+                              Tmin=line[2],
+                              Tavg=line[3],
+                              Depart=line[4],
+                              PrecipTotal=line[5],
+                              Heat=line[6])).toDF()
+
+# Print the data types of all `df` columns
+# df.dtypes
+
+# Print the schema of `df`
+df.printSchema()
