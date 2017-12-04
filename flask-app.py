@@ -30,7 +30,7 @@ def home_page():
 #Get past weather data for the past 30 days
 def get_past_weather():
   past30Days = []
-  for i in range(0, 30):
+  for i in range(0, 5): #Change the '5' to '30' to get weather for past 30 days
     #Get date i days ago
     date = str(datetime.now() - timedelta(days=i))[0:10]
 
