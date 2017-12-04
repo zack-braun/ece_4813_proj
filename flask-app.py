@@ -30,7 +30,7 @@ def home_page():
 #Get past weather data for the past 30 days
 def get_past_weather():
   past30Days = []
-  for i in range(1, 31):
+  for i in range(0, 30):
     #Get date i days ago
     date = str(datetime.now() - timedelta(days=i))[0:10]
 
@@ -48,9 +48,9 @@ def get_past_weather():
     weatherData['Tmin'] = result['history']['dailysummary'][0]['mintempi']
 
     past30Days.append(weatherData)
-
+  print (json.dumps(past30Days))
   return render_template('predictive.html', pastWeather = past30Days)
-
+  
 @app.route('/weatherdata', methods=['GET'])
 def get_data_weather():
     #Get Appropriate data from Dynamo
