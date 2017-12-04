@@ -24,7 +24,7 @@
                     text: 'Chicago Weather Details: Depart'
                 },
                 subtitle: {
-                    text: 'Subtitle text here'
+                    text: 'Click and drag to zoom'
                 },
                 xAxis: {
                     type: 'datetime',
@@ -38,9 +38,9 @@
                 },
                 yAxis: {
                     title: {
-                        text: '???'
+                        text: '°F'
                     },
-                    min: 0
+                    min: -40
                 },
                 tooltip: {
                     formatter: function () {
@@ -50,24 +50,29 @@
                     },
                     headerFormat: '<b>{series.name}</b><br>'
                 },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
 
                 series: [{
                     name: "Depart",
                     //turboThreshold: 0,
                     data: (function () {
-                    	var dataPoints = [];
-                    	//Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+                        var dataPoints = [];
+                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
                         $.ajax({
-                        	async: false,
-                        	url: '/weatherdata',
-                        	success: function(data){
-	                            console.log(data);
-	                            var i;
+                            async: false,
+                            url: '/weatherdata',
+                            success: function(data){
+                                console.log(data);
+                                var i;
 
-	                            for (i = 0; i < data.length; i++) {
+                                for (i = 0; i < data.length; i++) {
                                     dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Depart]);
-	                            }
-	                        }
+                                }
+                            }
                         })
                         return dataPoints;
                     }())
