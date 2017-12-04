@@ -1,8 +1,10 @@
 <!doctype html>
 <html>
     <head>
+        <script src="https://code.highcharts.com/stock/highstock.js"></script>
+        <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
         <script src="https://code.highcharts.com/modules/series-label.js"></script>
         <script src="https://code.highcharts.com/modules/exporting.js"></script>
     </head>
@@ -15,16 +17,15 @@
 
 
             //Depart
-            Highcharts.chart('containerDepart', {
-                chart: {
-                    zoomType: 'x',
-                    //type: 'spline'
-                },
+            Highcharts.stockChart('containerDepart', {
+                // chart: {
+                //     zoomType: 'x',
+                // },
                 title: {
                     text: 'Chicago Weather Details: Depart'
                 },
                 subtitle: {
-                    text: 'Click and drag to zoom'
+                    text: 'Departure from Avg Temperature'
                 },
                 xAxis: {
                     type: 'datetime',
@@ -40,11 +41,15 @@
                     title: {
                         text: '°F'
                     },
-                    min: -40
+                    min: -40,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
                 },
                 tooltip: {
                     formatter: function () {
-                        return '<b>' + this.series.name + '</b><br/>' +
+                        return '<b>Depart</b><br/>' +
                             Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
                             Highcharts.numberFormat(this.y, 2);
                     },
@@ -58,22 +63,23 @@
 
                 series: [{
                     name: "Depart",
-                    //turboThreshold: 0,
                     data: (function () {
                         var dataPoints = [];
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
-                        $.ajax({
-                            async: false,
-                            url: '/weatherdata',
-                            success: function(data){
-                                console.log(data);
-                                var i;
+                        // $(document).ready(function() {
+                            $.ajax({
+                                async: false,
+                                url: '/weatherdata',
+                                success: function(data){
+                                    console.log(data);
+                                    var i;
 
-                                for (i = 0; i < data.length; i++) {
-                                    dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Depart]);
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Depart]);
+                                    }
                                 }
-                            }
-                        })
+                            })
+                        // });
                         return dataPoints;
                     }())
                 }]
