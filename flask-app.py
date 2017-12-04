@@ -2,9 +2,10 @@
 from __future__ import print_function
 from flask import Flask, jsonify, abort, request, make_response, url_for
 from flask import render_template, redirect
-
+from datetime import datetime, timedelta
 import boto3
-
+import requests
+import json
 #Enter AWS Credentials
 AWS_KEY="AKIAIWFYRZWNWCDHI4ZA"
 AWS_SECRET="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"
@@ -24,6 +25,31 @@ app = Flask(__name__, static_url_path="")
 def home_page():
 
     return render_template('index.html')
+
+@app.route('/getPastWeather', methods=['GET'])
+#Get past weather data for the past 30 days
+def get_past_weather():
+  past30Days = []
+  for i in range(1, 31):
+    #Get date i days ago
+    date = str(datetime.now() - timedelta(days=i))[0:10]
+
+    #Pass date to wunderground API
+    apiDate = "history_" + datetime.strptime(date, '%Y-%m-%d').strftime('%Y%m%d')
+    
+    result = requests.get('http://api.wunderground.com/api/29c156d422e6a0ff/' + apiDate + '/q/IL/Chicago.json').json()
+    
+    #Populate list
+    weatherData = {}
+    weatherData['Date'] = date
+    weatherData['PrecipTotal'] = result['history']['dailysummary'][0]['precipi']
+    weatherData['Tavg'] = result['history']['dailysummary'][0]['meantempi']
+    weatherData['Tmax'] = result['history']['dailysummary'][0]['maxtempi']
+    weatherData['Tmin'] = result['history']['dailysummary'][0]['mintempi']
+
+    past30Days.append(weatherData)
+
+  return render_template('predictive.html', pastWeather = past30Days)
 
 @app.route('/weatherdata', methods=['GET'])
 def get_data_weather():
