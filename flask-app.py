@@ -48,7 +48,6 @@ def get_past_weather():
     weatherData['Tmin'] = result['history']['dailysummary'][0]['mintempi']
 
     past30Days.append(weatherData)
-  print (json.dumps(past30Days))
   return render_template('predictive.html', pastWeather = past30Days)
   
 @app.route('/weatherdata', methods=['GET'])
