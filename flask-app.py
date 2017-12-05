@@ -7,8 +7,8 @@ import boto3
 import requests
 import json
 #Enter AWS Credentials
-AWS_KEY="AKIAIWFYRZWNWCDHI4ZA"
-AWS_SECRET="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"
+AWS_KEY=""
+AWS_SECRET=""
 REGION="us-east-2"
 
 # Get the table
@@ -89,6 +89,41 @@ def get_data_weather():
 @app.route('/weather', methods=['GET'])
 def weather_page():
   return render_template('weather.html')
+
+
+@app.route('/crimedata', methods=['GET'])
+def get_data_crime():
+  #Get Appropriate data from Dynamo
+  crimeTable = dynamodb.Table('ChicagoCrime')
+
+  response = crimeTable.scan()
+
+  items = response['Items']
+
+  crimedataList = []
+  dateString = []
+  if len(items) > 0:
+    for item in items:
+      data = {}
+      #split date into Y-M-D for chart
+      dateString = str(item["Date"]).split('/')
+      for i in range(0, len(dateString)):
+        if len(dateString[i]) < 2:
+          dateString[i] = '0' + dateString[i]
+      data["Date"] = int(dateString[2] + dateString[0] + dateString[1])  #for sorting x-axis
+      data["Month"] = int(dateString[0])
+      data["Day"] = int(dateString[1])
+      data["Year"] = int('20' + dateString[2])
+
+      #other data
+      keys = item.keys()
+      for key in keys:
+        if key == 'Date':
+          pass
+        else:
+          data[key] = int(item[key])
+      crimedataList.append(data)
+    return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
 
 
 @app.route('/predictive', methods=['GET'])
