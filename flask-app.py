@@ -36,9 +36,9 @@ def get_past_weather():
 
     #Pass date to wunderground API
     apiDate = "history_" + datetime.strptime(date, '%Y-%m-%d').strftime('%Y%m%d')
-    
+
     result = requests.get('http://api.wunderground.com/api/29c156d422e6a0ff/' + apiDate + '/q/IL/Chicago.json').json()
-    
+
     #Populate list
     weatherData = {}
     weatherData['Date'] = date
@@ -49,7 +49,7 @@ def get_past_weather():
 
     past30Days.append(weatherData)
   return render_template('predictive.html', pastWeather = past30Days)
-  
+
 @app.route('/weatherdata', methods=['GET'])
 def get_data_weather():
     #Get Appropriate data from Dynamo
@@ -89,6 +89,13 @@ def get_data_weather():
 @app.route('/weather', methods=['GET'])
 def weather_page():
   return render_template('weather.html')
+
+
+@app.route('/predictive', methods=['GET'])
+def predictive_page():
+  return render_template('predictive.html')
+
+
 ##COMMENT OUT START
 # @app.route('/crime', methods=['GET'])
 # def crime_page():
