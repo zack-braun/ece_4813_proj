@@ -1,3 +1,4 @@
+
 #!flask/bin/python
 from __future__ import print_function
 from flask import Flask, jsonify, abort, request, make_response, url_for
@@ -33,9 +34,10 @@ def get_past_weather():
   for i in range(0, 5): #Change the '5' to '30' to get weather for past 30 days
     #Get date i days ago
     date = str(datetime.now() - timedelta(days=i))[0:10]
+    date = datetime.strptime(date, '%Y-%m-%d').strftime('%m/%d/%Y')
 
     #Pass date to wunderground API
-    apiDate = "history_" + datetime.strptime(date, '%Y-%m-%d').strftime('%Y%m%d')
+    apiDate = "history_" + datetime.strptime(date, '%m/%d/%Y').strftime('%Y%m%d')
 
     result = requests.get('http://api.wunderground.com/api/29c156d422e6a0ff/' + apiDate + '/q/IL/Chicago.json').json()
 
@@ -49,6 +51,24 @@ def get_past_weather():
 
     past30Days.append(weatherData)
   return render_template('predictive.html', pastWeather = past30Days)
+
+@app.route('/getForecast', methods=['GET'])
+#Get weather forecast for next five days including current day
+def get_forecast():
+  result = requests.get('https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22chicago%2C%20IL%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys').json()
+  
+  forecast = []
+  for i in range(0,5):
+  	date = str(datetime.now() + timedelta(days=i))[0:10]
+  	date = datetime.strptime(date, '%Y-%m-%d').strftime('%m/%d/%Y')
+  	
+  	day = {}
+  	day['Date'] = date
+  	day['Tmin'] = result['query']['results']['channel']['item']['forecast'][i]['low']
+  	day['Tmax'] = result['query']['results']['channel']['item']['forecast'][i]['high']
+  	day['Tavg'] = str((int(day['Tmin']) + int(day['Tmax']))/2)
+  	forecast.append(day)
+  return render_template('predictive.html', forecast = forecast)
 
 @app.route('/weatherdata', methods=['GET'])
 def get_data_weather():
