@@ -56,12 +56,12 @@ def get_past_weather():
 #Get weather forecast for next five days including current day
 def get_forecast():
   result = requests.get('https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22chicago%2C%20IL%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys').json()
-  
+
   forecast = []
   for i in range(0,5):
   	date = str(datetime.now() + timedelta(days=i))[0:10]
   	date = datetime.strptime(date, '%Y-%m-%d').strftime('%m/%d/%Y')
-  	
+
   	day = {}
   	day['Date'] = date
   	day['Tmin'] = result['query']['results']['channel']['item']['forecast'][i]['low']
@@ -217,7 +217,6 @@ def get_data_predictive():
   linRegData = r.text
   r = requests.get('http://192.168.10.101:8081/corr')
   corrData = r.text
-
 
   result = jsonify({
           'LinRegData': linRegData,
