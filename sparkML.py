@@ -13,12 +13,20 @@ from pyspark.ml.clustering import KMeans
 from flask import Flask, jsonify, abort, request, make_response, url_for
 from flask import render_template, redirect
 import pandas as pd
+from pyspark.ml.regression import LinearRegression
+from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.regression import DecisionTreeRegressor
+from pyspark.ml.regression import RandomForestRegressor
+from pyspark.ml.regression import GBTRegressor
+from pyspark.ml.feature import VectorIndexer
+from pyspark.ml import Pipeline
+import json
 
-
+#Source Code for Linear Regression available here: https://spark.apache.org/docs/1.6.1/ml-classification-regression.html
 
 #Enter AWS Credentials
-AWS_KEY="kry"
-AWS_SECRET="sad="
+AWS_KEY="asd"
+AWS_SECRET="asd+sd"
 REGION="us-east-2"
 
 # Get the table
@@ -115,21 +123,255 @@ def corr():
     MLlist.append(mlData)
 
   pandaDF = pd.DataFrame(MLlist)
+  result = pandaDF.corr()["Total Crimes"]
 
-  return jsonify(pandaDF.corr()["Total Crimes"].to_json())
+  return result.to_json()
 
 
+
+@app.route('/linearreg', methods = ['GET'])
+def linearRegression():
+
+  combinedDataList = combineData()
+  MLlist = []
+  for rows in combinedDataList:
+    mlData = {}
+    mlData['Total Crimes'] = rows['Total Crimes']
+    mlData['Depart'] = rows['Depart']
+    mlData['Heat'] = rows['Heat']
+    mlData['PrecipTotal'] = rows['PrecipTotal']
+    mlData['Tavg'] = rows['Tavg']
+    mlData['Tmax'] = rows['Tmax']
+    mlData['Tmin'] = rows['Tmin']
+    MLlist.append(mlData)
+
+  #define input data
+  inputRDD = sc.parallelize(MLlist)
+  featureddf = spark.read.json(inputRDD)
+  featureddf.printSchema()
+  featureddf.show(2,False)
+
+  # label data
+  input_data = featureddf.rdd.map(lambda x: (x['Total Crimes'], DenseVector([x['Depart'],x['Heat'], x['PrecipTotal'], x['Tavg'], x['Tmax'], x['Tmin']])))
+  MLdf = spark.createDataFrame(input_data, ["label", "features"])
+  #MLdf.printSchema()
+  #MLdf.show(2,False)
+
+  # Define LinearRegression algorithm
+  lr = LinearRegression()
+
+  # Fit 2 models, using different regularization parameters
+  modelA = lr.fit(MLdf, {lr.regParam:0.3})
+  predictionsA = modelA.transform(MLdf)
+  #predictionsA.show(1005)
+
+  evaluator = RegressionEvaluator(metricName="rmse")
+  RMSE = evaluator.evaluate(predictionsA)
+  #print("ModelA: Root Mean Squared Error = " + str(RMSE))
+
+  pandaDF = predictionsA.toPandas()
+
+  return json.dumps({
+          'DF': pandaDF.to_json(),
+          'RMSE': RMSE
+         })
+
+@app.route('/gbtreg', methods = ['GET'])
+def gbt():
+
+  combinedDataList = combineData()
+  MLlist = []
+  for rows in combinedDataList:
+    mlData = {}
+    mlData['Total Crimes'] = rows['Total Crimes']
+    mlData['Depart'] = rows['Depart']
+    mlData['Heat'] = rows['Heat']
+    mlData['PrecipTotal'] = rows['PrecipTotal']
+    mlData['Tavg'] = rows['Tavg']
+    mlData['Tmax'] = rows['Tmax']
+    mlData['Tmin'] = rows['Tmin']
+    MLlist.append(mlData)
+
+  #define input data
+  inputRDD = sc.parallelize(MLlist)
+  featureddf = spark.read.json(inputRDD)
+
+  # label data
+  input_data = featureddf.rdd.map(lambda x: (x['Total Crimes'], DenseVector([x['Depart'],x['Heat'], x['PrecipTotal'], x['Tavg'], x['Tmax'], x['Tmin']])))
+  MLdf = spark.createDataFrame(input_data, ["label", "features"])
+
+  # Automatically identify categorical features, and index them.
+  # Set maxCategories so features with > 4 distinct values are treated as continuous.
+  featureIndexer =\
+      VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=4).fit(MLdf)
+
+  # Split the data into training and test sets (30% held out for testing)
+  (trainingData, testData) = MLdf.randomSplit([0.7, 0.3])
+
+  # Train a GBT model.
+  gbt = GBTRegressor(featuresCol="indexedFeatures", maxIter=10)
+
+  # Chain indexer and GBT in a Pipeline
+  pipeline = Pipeline(stages=[featureIndexer, gbt])
+
+  # Train model.  This also runs the indexer.
+  model = pipeline.fit(trainingData)
+
+  # Make predictions.
+  predictions = model.transform(testData)
+
+  # Select example rows to display.
+  #predictions.select("prediction", "label", "features").show(5)
+
+  # Select (prediction, true label) and compute test error
+  evaluator = RegressionEvaluator(
+      labelCol="label", predictionCol="prediction", metricName="rmse")
+  rmse = evaluator.evaluate(predictions)
+  #print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
+
+  gbtModel = model.stages[1]
+  #print(gbtModel)  # summary only
+
+  pandaDF = predictions.toPandas()
+
+  return json.dumps({
+                      'DF': pandaDF.to_json(),
+                      'treeSize': str(gbtModel),
+                      'RMSE': rmse
+                     })
+
+@app.route('/rfreg', methods = ['GET'])
+def rfreg():
+
+  combinedDataList = combineData()
+  MLlist = []
+  for rows in combinedDataList:
+    mlData = {}
+    mlData['Total Crimes'] = rows['Total Crimes']
+    mlData['Depart'] = rows['Depart']
+    mlData['Heat'] = rows['Heat']
+    mlData['PrecipTotal'] = rows['PrecipTotal']
+    mlData['Tavg'] = rows['Tavg']
+    mlData['Tmax'] = rows['Tmax']
+    mlData['Tmin'] = rows['Tmin']
+    MLlist.append(mlData)
+
+  #define input data
+  inputRDD = sc.parallelize(MLlist)
+  featureddf = spark.read.json(inputRDD)
+
+  # label data
+  input_data = featureddf.rdd.map(lambda x: (x['Total Crimes'], DenseVector([x['Depart'],x['Heat'], x['PrecipTotal'], x['Tavg'], x['Tmax'], x['Tmin']])))
+  MLdf = spark.createDataFrame(input_data, ["label", "features"])
+
+  # Automatically identify categorical features, and index them.
+  # Set maxCategories so features with > 4 distinct values are treated as continuous.
+  featureIndexer =\
+      VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=4).fit(MLdf)
+
+  # Split the data into training and test sets (30% held out for testing)
+  (trainingData, testData) = MLdf.randomSplit([0.7, 0.3])
+
+  # Train a RandomForest model.
+  rf = RandomForestRegressor(featuresCol="indexedFeatures")
+
+  # Chain indexer and forest in a Pipeline
+  pipeline = Pipeline(stages=[featureIndexer, rf])
+
+  # Train model.  This also runs the indexer.
+  model = pipeline.fit(trainingData)
+
+  # Make predictions.
+  predictions = model.transform(testData)
+
+  # Select example rows to display.
+  #predictions.select("prediction", "label", "features").show(5)
+
+  # Select (prediction, true label) and compute test error
+  evaluator = RegressionEvaluator(
+      labelCol="label", predictionCol="prediction", metricName="rmse")
+  rmse = evaluator.evaluate(predictions)
+  #print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
+
+  rfModel = model.stages[1]
+  #print(rfModel)  # summary only
+
+  pandaDF = predictions.toPandas()
+
+
+  return json.dumps({
+          'DF': pandaDF.to_json(),
+          'treeSize': str(rfModel),
+          'RMSE': rmse
+         })
+
+
+@app.route('/dectreereg', methods = ['GET'])
+def decTreeReg():
+  combinedDataList = combineData()
+  MLlist = []
+  for rows in combinedDataList:
+    mlData = {}
+    mlData['Total Crimes'] = rows['Total Crimes']
+    mlData['Depart'] = rows['Depart']
+    mlData['Heat'] = rows['Heat']
+    mlData['PrecipTotal'] = rows['PrecipTotal']
+    mlData['Tavg'] = rows['Tavg']
+    mlData['Tmax'] = rows['Tmax']
+    mlData['Tmin'] = rows['Tmin']
+    MLlist.append(mlData)
+
+  #define input data
+  inputRDD = sc.parallelize(MLlist)
+  featureddf = spark.read.json(inputRDD)
+
+  # label data
+  input_data = featureddf.rdd.map(lambda x: (x['Total Crimes'], DenseVector([x['Depart'],x['Heat'], x['PrecipTotal'], x['Tavg'], x['Tmax'], x['Tmin']])))
+  MLdf = spark.createDataFrame(input_data, ["label", "features"])
+  #MLdf.show(10,False)
+  # Automatically identify categorical features, and index them.
+  # We specify maxCategories so features with > 4 distinct values are treated as continuous.
+  featureIndexer =\
+      VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=4).fit(MLdf)
+
+  # Split the data into training and test sets (30% held out for testing)
+  (trainingData, testData) = MLdf.randomSplit([0.7, 0.3])
+
+  # Train a DecisionTree model.
+  dt = DecisionTreeRegressor(featuresCol="indexedFeatures")
+
+  # Chain indexer and tree in a Pipeline
+  pipeline = Pipeline(stages=[featureIndexer, dt])
+
+  # Train model.  This also runs the indexer.
+  model = pipeline.fit(trainingData)
+
+  # Make predictions.
+  predictions = model.transform(testData)
+
+  # Select example rows to display.
+  #predictions.select("prediction", "label", "features").show(5,False)
+
+  # Select (prediction, true label) and compute test error
+  evaluator = RegressionEvaluator(
+      labelCol="label", predictionCol="prediction", metricName="rmse")
+  rmse = evaluator.evaluate(predictions)
+  #print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
+
+  treeModel = model.stages[1]
+  # summary only
+  #print(treeModel)
+
+  pandaDF = predictions.toPandas()
+
+  return json.dumps({
+          'DF': pandaDF.to_json(),
+          'treeSize': str(treeModel),
+          'RMSE': rmse
+         })
 
 @app.route('/kmeans/<int:cluster>', methods=['GET'])
 def kMeans(cluster):
-
-  newDepart = request.args.get('Depart')
-  newHeat = request.args.get('Heat')
-  newPrecipTotal = request.args.get('PrecipTotal')
-  newTavg = request.args.get('Tavg')
-  newTmax = request.args.get('Tmax')
-  newTmin = request.args.get('Tmin')
-  print newDepart
 
   combinedDataList = combineData()
 
@@ -148,13 +390,13 @@ def kMeans(cluster):
   #define input data
   inputRDD = sc.parallelize(MLlist)
   featureddf = spark.read.json(inputRDD)
-  featureddf.printSchema()
-  featureddf.show(2,False)
+  #featureddf.printSchema()
+  #featureddf.show(2,False)
   # Replace `df` with the new DataFrame
-  input_data = featureddf.rdd.map(lambda x: (x['Total Crimes'], DenseVector(x[0:])))
+  input_data = featureddf.rdd.map(lambda x: (x['Total Crimes'], DenseVector([x['Depart'],x['Heat'], x['PrecipTotal'], x['Tavg'], x['Tmax'], x['Tmin'], x['Total Crimes']])))
   MLdf = spark.createDataFrame(input_data, ["label", "features"])
-  MLdf.printSchema()
-  MLdf.show(2,False)
+  #MLdf.printSchema()
+  #MLdf.show(2,False)
   """
   # Initialize the `standardScaler`
   standardScaler = StandardScaler(inputCol="unscaledFeatures", outputCol="features")
@@ -177,22 +419,38 @@ def kMeans(cluster):
 
   # Evaluate clustering by computing Within Set Sum of Squared Errors.
   wssse = model.computeCost(MLdf)
-  print("Within Set Sum of Squared Errors = " + str(wssse))
+  #print("Within Set Sum of Squared Errors = " + str(wssse))
 
   # Shows the result.
   centers = model.clusterCenters()
-  print("Cluster Centers: ")
+  #print("Cluster Centers: ")
+  centerlist = []
+  i = 0;
   for center in centers:
-      print(center)
+    centerData = {}
+    centerData['Center ' + str(i) + ' Depart'] = center[0]
+    centerData['Center ' + str(i) + '  Heat'] = center[1]
+    centerData['Center ' + str(i) + '  PrecipTotal'] = center[2]
+    centerData['Center ' + str(i) + '  Tavg'] = center[3]
+    centerData['Center ' + str(i) + '  Tmin'] = center[4]
+    centerData['Center ' + str(i) + '  Total Crimes'] = center[5]
+    centerlist.append(centerData)
+    i = i + 1
+
 
   transformed = model.transform(MLdf).select("features", "prediction")
-  transformed.printSchema()
-  transformed.show(50,False)
+  #transformed.printSchema()
+  #transformed.show(50,False)
+  pandaDF = transformed.toPandas()
 
-  return str(wssse)
+  return json.dumps({
+                      'DF': pandaDF.to_json(),
+                      'clusterCenters': centerlist,
+                      'WSSSE': wssse
+                     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8081)
+    app.run(host = '192.168.10.101', debug = True, port = 8081)
 
 
 
