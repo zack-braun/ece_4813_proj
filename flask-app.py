@@ -126,6 +126,25 @@ def get_data_crime():
     return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
 
 
+@app.route('/predictivedata', methods=['GET'])
+def get_data_predictive():
+  #Get Appropriate data from Spark Flask App
+  r = requests.get('http://192.168.10.101:8081/kmeans/6')
+  kmeansData = r.text
+  r = requests.get('http://192.168.10.101:8081/linearreg')
+  linRegData = r.text
+  r = requests.get('http://192.168.10.101:8081/corr')
+  corrData = r.text
+
+
+  result = jsonify({
+          'LinRegData': linRegData,
+          'kmeansData': kmeansData,
+          'corrData': corrData
+          })
+  return result
+
+
 @app.route('/predictive', methods=['GET'])
 def predictive_page():
   return render_template('predictive.html')
