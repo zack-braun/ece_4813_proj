@@ -87,10 +87,12 @@
                     name: "Depart",
                     data: (function () {
                         var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Depart");
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
                             $.ajax({
                                 async: false,
-                                url: '/weatherdata',
+                                url: urlString,
                                 success: function(data){
                                     //console.log(data);
                                     var i;
@@ -156,10 +158,12 @@
                     name: "Heat",
                     data: (function () {
                         var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Heat");
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
                             $.ajax({
                                 async: false,
-                                url: '/weatherdata',
+                                url: urlString,
                                 success: function(data){
                                     //console.log(data);
                                     var i;
@@ -224,10 +228,12 @@
                     name: "PrecipTotal",
                     data: (function () {
                         var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","PrecipTotal");
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
                             $.ajax({
                                 async: false,
-                                url: '/weatherdata',
+                                url: urlString,
                                 success: function(data){
                                     //console.log(data);
                                     var i;
@@ -292,10 +298,12 @@
                     name: "Tavg",
                     data: (function () {
                         var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Tavg");
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
                             $.ajax({
                                 async: false,
-                                url: '/weatherdata',
+                                url: urlString,
                                 success: function(data){
                                     //console.log(data);
                                     var i;
@@ -360,10 +368,12 @@
                     name: "Tmin",
                     data: (function () {
                         var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Tmin");
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
                             $.ajax({
                                 async: false,
-                                url: '/weatherdata',
+                                url: urlString,
                                 success: function(data){
                                     //console.log(data);
                                     var i;
@@ -428,10 +438,12 @@
                     name: "Tmax",
                     data: (function () {
                         var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Tmax");
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
                             $.ajax({
                                 async: false,
-                                url: '/weatherdata',
+                                url: urlString,
                                 success: function(data){
                                     //console.log(data);
                                     var i;
