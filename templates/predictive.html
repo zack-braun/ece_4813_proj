@@ -1,24 +1,90 @@
-<!DOCTYPE HTML>
+<!doctype html>
 <html>
+    <head>
+        <script src="https://code.highcharts.com/stock/highstock.js"></script>
+        <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
+        <script src="https://code.highcharts.com/modules/series-label.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    </head>
+    <body>
 
-<head>
-    <title>Predictive</title>
+        <div id="containerDepart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-</head>
+        <script>
+        $(document).ready(function () {
 
 
-<body>
+            //Depart
+            Highcharts.stockChart('containerDepart', {
+                // chart: {
+                //     zoomType: 'x',
+                // },
+                title: {
+                    text: 'Chicago Weather Details: Depart'
+                },
+                subtitle: {
+                    text: 'Departure from Avg Temperature'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        month: '%e. %b, %Y',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: '°F'
+                    },
+                    min: -40,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>Depart</b><br/>' +
+                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    },
+                    headerFormat: '<b>{series.name}</b><br>'
+                },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
 
-    <center>
-        <h1>Predictive</h1>
+                series: [{
+                    name: "Depart",
+                    data: (function () {
+                        var dataPoints = [];
+                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+                        // $(document).ready(function() {
+                            $.ajax({
+                                async: false,
+                                url: '/weatherdata',
+                                success: function(data){
+                                    console.log(data);
+                                    var i;
 
-</body>
-
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Depart]);
+                                    }
+                                }
+                            })
+                        // });
+                        return dataPoints;
+                    }())
+                }]
+            });
+        });
+        </script>
+    </body>
 </html>
