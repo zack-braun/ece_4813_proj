@@ -86,6 +86,37 @@ def get_data_weather():
   else:
     return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, 'Depart': 0, 'Heat': 0, 'PrecipTotal': 0, 'Tavg': 0, 'Tmax': 0, 'Tmin': 0})
 
+@app.route('/weatherdata/<dataField>', methods=['GET'])
+def get_field_data_weather(dataField):
+    #Get Appropriate data from Dynamo
+  weatherTable = dynamodb.Table('ChicagoWeather')
+
+  response = weatherTable.scan()
+
+  items = response['Items']
+
+  weatherdataList = []
+  dateString = []
+  if len(items) > 0:
+    for item in items:
+      data = {}
+      #split date into Y-M-D for chart
+      dateString = str(item["Date"]).split('/')
+      for i in range(0, len(dateString)):
+        if len(dateString[i]) < 2:
+          dateString[i] = '0' + dateString[i]
+      data["Date"] = int(dateString[2] + dateString[0] + dateString[1])  #for sorting x-axis
+      data["Month"] = int(dateString[0])
+      data["Day"] = int(dateString[1])
+      data["Year"] = int('20' + dateString[2])
+
+      #other data
+      data[dataField] = float(item[dataField])
+      weatherdataList.append(data)
+    return jsonify(sorted(weatherdataList, key=lambda k: k["Date"]))
+  else:
+    return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
+
 @app.route('/weather', methods=['GET'])
 def weather_page():
   return render_template('weather.html')
