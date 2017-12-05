@@ -10,22 +10,22 @@
     </head>
     <body>
 
-        <div id="containerDepart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div id="containerTempVsCrime" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
         <script>
         $(document).ready(function () {
 
 
             //Depart
-            Highcharts.stockChart('containerDepart', {
+            Highcharts.stockChart('containerTempVsCrime', {
                 // chart: {
                 //     zoomType: 'x',
                 // },
                 title: {
-                    text: 'Chicago Weather Details: Depart'
+                    text: 'Temperature and Crime in Chicago'
                 },
                 subtitle: {
-                    text: 'Departure from Avg Temperature'
+                    text: 'Average Temperature and Number of Reported Crimes'
                 },
                 xAxis: {
                     type: 'datetime',
@@ -37,23 +37,23 @@
                         text: 'Date'
                     }
                 },
-                yAxis: {
+                yAxis: [{
                     title: {
-                        text: '°F'
+                        text: 'Temperature (°F)'
                     },
+                    opposite: false,
                     min: -40,
                     crosshair: true
-                },
+                }, {
+                    title: {
+                        text: 'Number of Crimes'
+                    },
+                    opposite: true,
+                    min: 0,
+                    crosshair: true
+                }],
                 rangeSelector: {
                     selected: 1
-                },
-                tooltip: {
-                    formatter: function () {
-                        return '<b>Depart</b><br/>' +
-                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
-                            Highcharts.numberFormat(this.y, 2);
-                    },
-                    headerFormat: '<b>{series.name}</b><br>'
                 },
                 plotOptions: {
                     series: {
@@ -62,11 +62,10 @@
                 },
 
                 series: [{
-                    name: "Depart",
+                    name: "Temperature",
+                    yAxis: 0,
                     data: (function () {
                         var dataPoints = [];
-                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
-                        // $(document).ready(function() {
                             $.ajax({
                                 async: false,
                                 url: '/weatherdata',
@@ -75,14 +74,34 @@
                                     var i;
 
                                     for (i = 0; i < data.length; i++) {
-                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Depart]);
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Tavg]);
                                     }
                                 }
                             })
                         // });
                         return dataPoints;
                     }())
-                }]
+                }, {
+                    name: "Crimes",
+                    yAxis: 1,
+                    data: (function () {
+                        var dataPoints = [];
+                            $.ajax({
+                                async: false,
+                                url: '/crimedata',
+                                success: function(data){
+                                    console.log(data);
+                                    var i;
+
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i]['Total Crimes']]);
+                                    }
+                                }
+                            })
+                        // });
+                        return dataPoints;
+                    }())
+                  }]
             });
         });
         </script>
