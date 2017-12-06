@@ -133,7 +133,6 @@ def corr():
 
 @app.route('/linearreg', methods = ['GET'])
 def linearRegression():
-  classifyCrime()
   combinedDataList = combineData()
   MLlist = []
   for rows in combinedDataList:
