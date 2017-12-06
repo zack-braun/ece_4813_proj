@@ -19,7 +19,13 @@
     <body>
         <center>
             <h1>Chicago Crime Details - Public Areas (Dec. 2004 - Dec. 2014)</h1>
-            <h4><a href="/">Home</a> | <a href="/crime">Crimes in Public Areas</a> | <a href = "/crimeResidential">Crimes in Residential Areas</a> | <a href = "/crimeStores">Crimes in Stores and Restaurants</a></h4>
+            <h4><a href="/">Home</a></h4>
+            <br>
+            <h4><a href="/crime">Crimes in Public Areas</a> | <a href = "/crimeResidential">Crimes in Residential Areas</a> | <a href = "/crimeStores">Crimes in Stores and Restaurants</a></h4>
+            <br>
+            <h4>Types of Crime: <a href="/crimeTypes1">Page 1</a> | <a href = "/crimeTypes2">Page 2</a> | <a href = "/crimeTypes3">Page 3</a> | <a href = "/crimeTypes4">Page 4</a></h4>
+            <br>
+            <h4><a href="/crimeTotal">Total Number of Crimes</a></h4>
         </center>
 
 		<div id="containerALLEY" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
@@ -44,7 +50,6 @@
 	        $(document).ready(function () {
 
 				//Alleys
-
 				window.chart2 = new Highcharts.stockChart({
 	                chart: {
 	                    renderTo: "containerALLEY"
