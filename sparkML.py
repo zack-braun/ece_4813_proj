@@ -25,8 +25,8 @@ import json
 #Source Code for Linear Regression available here: https://spark.apache.org/docs/1.6.1/ml-classification-regression.html
 
 #Enter AWS Credentials
-AWS_KEY="asd"
-AWS_SECRET="asd+sd"
+AWS_KEY="AKIAJMXT2VSYHG7DWQVQ"
+AWS_SECRET="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"
 REGION="us-east-2"
 
 # Get the table
@@ -450,7 +450,7 @@ def kMeans(cluster):
                      })
 
 if __name__ == '__main__':
-    app.run(host = '192.168.10.101', debug = True, port = 8081)
+    app.run(host = '0.0.0.0', debug = True, port = 8081)
 
 
 
