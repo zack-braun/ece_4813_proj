@@ -450,7 +450,7 @@ def kMeans(cluster):
                      })
 
 if __name__ == '__main__':
-    app.run(host = '192.168.10.101', debug = True, port = 8081)
+    app.run(host = '0.0.0.0', debug = True, port = 8081)
 
 
 

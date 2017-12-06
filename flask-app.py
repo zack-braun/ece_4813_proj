@@ -1,3 +1,4 @@
+
 #!flask/bin/python
 from __future__ import print_function
 from flask import Flask, jsonify, abort, request, make_response, url_for
@@ -7,8 +8,8 @@ import boto3
 import requests
 import json
 #Enter AWS Credentials
-AWS_KEY=""
-AWS_SECRET=""
+AWS_KEY="AKIAJMXT2VSYHG7DWQVQ"
+AWS_SECRET="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"
 REGION="us-east-2"
 
 # Get the table
@@ -33,9 +34,10 @@ def get_past_weather():
   for i in range(0, 5): #Change the '5' to '30' to get weather for past 30 days
     #Get date i days ago
     date = str(datetime.now() - timedelta(days=i))[0:10]
+    date = datetime.strptime(date, '%Y-%m-%d').strftime('%m/%d/%Y')
 
     #Pass date to wunderground API
-    apiDate = "history_" + datetime.strptime(date, '%Y-%m-%d').strftime('%Y%m%d')
+    apiDate = "history_" + datetime.strptime(date, '%m/%d/%Y').strftime('%Y%m%d')
 
     result = requests.get('http://api.wunderground.com/api/29c156d422e6a0ff/' + apiDate + '/q/IL/Chicago.json').json()
 
@@ -49,6 +51,24 @@ def get_past_weather():
 
     past30Days.append(weatherData)
   return render_template('predictive.html', pastWeather = past30Days)
+
+@app.route('/getForecast', methods=['GET'])
+#Get weather forecast for next five days including current day
+def get_forecast():
+  result = requests.get('https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22chicago%2C%20IL%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys').json()
+
+  forecast = []
+  for i in range(0,5):
+  	date = str(datetime.now() + timedelta(days=i))[0:10]
+  	date = datetime.strptime(date, '%Y-%m-%d').strftime('%m/%d/%Y')
+
+  	day = {}
+  	day['Date'] = date
+  	day['Tmin'] = result['query']['results']['channel']['item']['forecast'][i]['low']
+  	day['Tmax'] = result['query']['results']['channel']['item']['forecast'][i]['high']
+  	day['Tavg'] = str((int(day['Tmin']) + int(day['Tmax']))/2)
+  	forecast.append(day)
+  return render_template('predictive.html', forecast = forecast)
 
 @app.route('/weatherdata', methods=['GET'])
 def get_data_weather():
@@ -85,6 +105,37 @@ def get_data_weather():
     return jsonify(sorted(weatherdataList, key=lambda k: k["Date"]))
   else:
     return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, 'Depart': 0, 'Heat': 0, 'PrecipTotal': 0, 'Tavg': 0, 'Tmax': 0, 'Tmin': 0})
+
+@app.route('/weatherdata/<dataField>', methods=['GET'])
+def get_field_data_weather(dataField):
+    #Get Appropriate data from Dynamo
+  weatherTable = dynamodb.Table('ChicagoWeather')
+
+  response = weatherTable.scan()
+
+  items = response['Items']
+
+  weatherdataList = []
+  dateString = []
+  if len(items) > 0:
+    for item in items:
+      data = {}
+      #split date into Y-M-D for chart
+      dateString = str(item["Date"]).split('/')
+      for i in range(0, len(dateString)):
+        if len(dateString[i]) < 2:
+          dateString[i] = '0' + dateString[i]
+      data["Date"] = int(dateString[2] + dateString[0] + dateString[1])  #for sorting x-axis
+      data["Month"] = int(dateString[0])
+      data["Day"] = int(dateString[1])
+      data["Year"] = int('20' + dateString[2])
+
+      #other data
+      data[dataField] = float(item[dataField])
+      weatherdataList.append(data)
+    return jsonify(sorted(weatherdataList, key=lambda k: k["Date"]))
+  else:
+    return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
 
 @app.route('/weather', methods=['GET'])
 def weather_page():
@@ -125,66 +176,60 @@ def get_data_crime():
       crimedataList.append(data)
     return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
 
+@app.route('/crimedata/<dataField>', methods=['GET'])
+def get_field_data_crime(dataField):
+    #Get Appropriate data from Dynamo
+  crimeTable = dynamodb.Table('ChicagoCrime')
+
+  response = crimeTable.scan()
+
+  items = response['Items']
+
+  crimedataList = []
+  dateString = []
+  if len(items) > 0:
+    for item in items:
+      data = {}
+      #split date into Y-M-D for chart
+      dateString = str(item["Date"]).split('/')
+      for i in range(0, len(dateString)):
+        if len(dateString[i]) < 2:
+          dateString[i] = '0' + dateString[i]
+      data["Date"] = int(dateString[2] + dateString[0] + dateString[1])  #for sorting x-axis
+      data["Month"] = int(dateString[0])
+      data["Day"] = int(dateString[1])
+      data["Year"] = int('20' + dateString[2])
+
+      #other data
+      data[dataField] = float(item[dataField])
+      crimedataList.append(data)
+    return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
+  else:
+    return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
+
+
+@app.route('/predictivedata', methods=['GET'])
+def get_data_predictive():
+  #Get Appropriate data from Spark Flask App
+  r = requests.get('http://192.168.10.101:8081/kmeans/6')
+  kmeansData = r.text
+  r = requests.get('http://192.168.10.101:8081/linearreg')
+  linRegData = r.text
+  r = requests.get('http://192.168.10.101:8081/corr')
+  corrData = r.text
+
+  result = jsonify({
+          'LinRegData': linRegData,
+          'kmeansData': kmeansData,
+          'corrData': corrData
+          })
+  return result
+
 
 @app.route('/predictive', methods=['GET'])
 def predictive_page():
   return render_template('predictive.html')
 
-
-##COMMENT OUT START
-# @app.route('/crime', methods=['GET'])
-# def crime_page():
-
-#   #gets Chicagocrime from DB
-#   crimeTable = dynamodb.Table('ChicagoCrime')
-
-#   response = crimeTable.scan()
-
-#   items = response['Items']
-
-#   crimedataList = []
-
-#   if len(items) > 0:
-#     for item in items:
-#       data = {}
-#       data["Date"] = str(item["Date"])  #Assuming all "dates" will be of entry YEAR-MONTH-DAY e.g. 2017-12-02  #Assuming all "dates" will be of entry YEAR-MONTH-DAY e.g. 2017-12-02
-      # dateString = data["Date"].split('-')
-      # data["Year"] = int(dateString[0])
-      # data["Month"] = int(dateString[1])
-      # data["Day"] = int(datestring[2])
-
-      #rest of data
-#       data["Location: ALLEY"] = int(item["Location: ALLEY"])
-#       data["Location: ALLEY"] = int(item["Location: APARTMENT"])
-#       data["Location: COMMERCIAL / BUSINESS OFFICE"] = float(item["Location: COMMERCIAL / BUSINESS OFFICE"])
-#       data["Location: DEPARTMENT STORE"] = int(item["Location: DEPARTMENT STORE"])
-#       data["Location: GAS STATION"] = int(item["Location: GAS STATION"])
-#       data["Location: GROCERY FOOD STORE"] = int(item["Location: GROCERY FOOD STORE"])
-#       data["Location: OTHER"] = int(item["Location: OTHER"])
-#       data["Location: PARK PROPERTY"] = int(item["Location: PARK PROPERTY"])
-#       data["Location: PARKING LOT/GARAGE(NON.RESID.)"] = int(item["Location: PARKING LOT/GARAGE(NON.RESID.)"])
-#       data["Location: RESIDENCE"] = int(item["Location: RESIDENCE"])
-#       data["Location: RESIDENCE PORCH/HALLWAY"] = int(item["Location: RESIDENCE PORCH/HALLWAY"])
-#       data["Location: RESIDENCE-GARAGE"] = int(item["Location: RESIDENCE-GARAGE"])
-#       data["Location: RESTAURANT"] = int(item["Location: RESTAURANT"])
-#       data["Location: SCHOOL, PUBLIC, BUILDING"] = int(item["Location: SCHOOL, PUBLIC, BUILDING"])
-#       data["Location: SIDEWALK"] = int(item["Location: SIDEWALK"])
-#       data["Location: SMALL RETAIL STORE"] = int(item["Location: SMALL RETAIL STORE"])
-#       data["Location: STREET"] = int(item["Location: STREET"])
-#       data["Location: VEHICLE NON-COMMERCIAL"] = int(item["Location: VEHICLE NON-COMMERCIAL"])
-#       data["Total Crimes"] = int(item["Total Crimes"])
-#     crimedataList.append(data)
-
-#   #example how to get from DB
-#   #data is saved as an Array of JSONs
-#     return render_template('crime.html')
-
-
-# @app.route('/predictive', methods=['GET'])
-# def predictive_page():
-
-#     return render_template('predictive.html')
-#COMMENT OUT END
 #addional routes may be needed for interactivity
 
 

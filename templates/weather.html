@@ -1,31 +1,53 @@
 <!doctype html>
 <html>
     <head>
+        <title>Chicago Weather Details</title>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
         <script src="https://code.highcharts.com/stock/highstock.js"></script>
         <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-        <!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
         <script src="https://code.highcharts.com/modules/series-label.js"></script>
         <script src="https://code.highcharts.com/modules/exporting.js"></script>
     </head>
+    <style>
+    .spacer {
+        height: 60px;
+    }
+    </style>
     <body>
+        <center>
+            <h1>Chicago Weather Details (Dec. 2004 - Dec. 2014)</h1>
+            <h4><a href="/">Home</a></h4>
+        </center>
 
         <div id="containerDepart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+        <div id="containerHeat" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+        <div id="containerPrecipTotal" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+        <div id="containerTavg" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+        <div id="containerTmin" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+        <div id="containerTmax" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
         <script>
         $(document).ready(function () {
 
 
             //Depart
-            Highcharts.stockChart('containerDepart', {
-                // chart: {
-                //     zoomType: 'x',
-                // },
+            window.chart1 = new Highcharts.stockChart({
+                chart: {
+                    renderTo: "containerDepart"
+                },
                 title: {
-                    text: 'Chicago Weather Details: Depart'
+                    text: 'Departure from Average Temperature'
                 },
                 subtitle: {
-                    text: 'Departure from Avg Temperature'
+                    text: 'Measured in °F'
                 },
                 xAxis: {
                     type: 'datetime',
@@ -65,13 +87,14 @@
                     name: "Depart",
                     data: (function () {
                         var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Depart");
                         //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
-                        // $(document).ready(function() {
                             $.ajax({
                                 async: false,
-                                url: '/weatherdata',
+                                url: urlString,
                                 success: function(data){
-                                    console.log(data);
+                                    //console.log(data);
                                     var i;
 
                                     for (i = 0; i < data.length; i++) {
@@ -79,7 +102,357 @@
                                     }
                                 }
                             })
-                        // });
+                        return dataPoints;
+                    }())
+                }]
+            });
+
+
+
+            //Heat
+            window.chart2 = new Highcharts.stockChart({
+                chart: {
+                    renderTo: "containerHeat"
+                },
+                title: {
+                    text: 'Heat'
+                },
+                subtitle: {
+                    text: 'Measured in Joules'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        month: '%e. %b, %Y',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'J'
+                    },
+                    min: 0,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>Heat</b><br/>' +
+                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    },
+                    headerFormat: '<b>{series.name}</b><br>'
+                },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
+
+                series: [{
+                    name: "Heat",
+                    data: (function () {
+                        var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Heat");
+                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+                            $.ajax({
+                                async: false,
+                                url: urlString,
+                                success: function(data){
+                                    //console.log(data);
+                                    var i;
+
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Heat]);
+                                    }
+                                }
+                            })
+                        return dataPoints;
+                    }())
+                }]
+            });
+
+
+            //PrecipTotal
+            window.chart3 = new Highcharts.stockChart({
+                chart: {
+                    renderTo: "containerPrecipTotal"
+                },
+                title: {
+                    text: 'Total Precipitation'
+                },
+                subtitle: {
+                    text: 'Measured in Inches'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        month: '%e. %b, %Y',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Inches'
+                    },
+                    min: 0,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>Total Precipitation</b><br/>' +
+                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    },
+                    headerFormat: '<b>{series.name}</b><br>'
+                },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
+
+                series: [{
+                    name: "PrecipTotal",
+                    data: (function () {
+                        var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","PrecipTotal");
+                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+                            $.ajax({
+                                async: false,
+                                url: urlString,
+                                success: function(data){
+                                    //console.log(data);
+                                    var i;
+
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].PrecipTotal]);
+                                    }
+                                }
+                            })
+                        return dataPoints;
+                    }())
+                }]
+            });
+
+
+            //Tavg
+            window.chart4 = new Highcharts.stockChart({
+                chart: {
+                    renderTo: "containerTavg"
+                },
+                title: {
+                    text: 'Average Temperature'
+                },
+                subtitle: {
+                    text: 'Measured in °F'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        month: '%e. %b, %Y',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: '°F'
+                    },
+                    min: -10,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>Average Temperature</b><br/>' +
+                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    },
+                    headerFormat: '<b>{series.name}</b><br>'
+                },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
+
+                series: [{
+                    name: "Tavg",
+                    data: (function () {
+                        var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Tavg");
+                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+                            $.ajax({
+                                async: false,
+                                url: urlString,
+                                success: function(data){
+                                    //console.log(data);
+                                    var i;
+
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Tavg]);
+                                    }
+                                }
+                            })
+                        return dataPoints;
+                    }())
+                }]
+            });
+
+
+            //Tmin
+            window.chart5 = new Highcharts.stockChart({
+                chart: {
+                    renderTo: "containerTmin"
+                },
+                title: {
+                    text: 'Minimum Temperature'
+                },
+                subtitle: {
+                    text: 'Measured in °F'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        month: '%e. %b, %Y',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: '°F'
+                    },
+                    min: -20,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>Minimum Temperature</b><br/>' +
+                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    },
+                    headerFormat: '<b>{series.name}</b><br>'
+                },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
+
+                series: [{
+                    name: "Tmin",
+                    data: (function () {
+                        var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Tmin");
+                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+                            $.ajax({
+                                async: false,
+                                url: urlString,
+                                success: function(data){
+                                    //console.log(data);
+                                    var i;
+
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Tmin]);
+                                    }
+                                }
+                            })
+                        return dataPoints;
+                    }())
+                }]
+            });
+
+
+            //Tmax
+            window.chart6 = new Highcharts.stockChart({
+                chart: {
+                    renderTo: "containerTmax"
+                },
+                title: {
+                    text: 'Maximum Temperature'
+                },
+                subtitle: {
+                    text: 'Measured in °F'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        month: '%e. %b, %Y',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: '°F'
+                    },
+                    min: -5,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>Maximum Temperature</b><br/>' +
+                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    },
+                    headerFormat: '<b>{series.name}</b><br>'
+                },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
+
+                series: [{
+                    name: "Tmax",
+                    data: (function () {
+                        var dataPoints = [];
+                        var urlString = "weatherdata/dataField";
+                        urlString = urlString.replace("dataField","Tmax");
+                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+                            $.ajax({
+                                async: false,
+                                url: urlString,
+                                success: function(data){
+                                    //console.log(data);
+                                    var i;
+
+                                    for (i = 0; i < data.length; i++) {
+                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Tmax]);
+                                    }
+                                }
+                            })
                         return dataPoints;
                     }())
                 }]

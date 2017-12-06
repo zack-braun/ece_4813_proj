@@ -14,9 +14,7 @@
 
         <script>
         $(document).ready(function () {
-
-
-            //Depart
+            //TempVsCrime
             Highcharts.stockChart('containerTempVsCrime', {
                 // chart: {
                 //     zoomType: 'x',
@@ -105,5 +103,156 @@
             });
         });
         </script>
+
+
+        <div id="containerCorrelations" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+    <script>
+
+      $(document).ready(function () {
+		// Correlation Bar Chart
+		Highcharts.chart('containerCorrelations', {
+			chart: {
+				type: 'column'
+			},
+			title: {
+				text: 'Which Weather Correlations Affected Crime the Most?'
+			},
+			subtitle: {
+				text: 'The Relative Statistical Significance of each Weather Feature'
+			},
+			xAxis: {
+				type: 'category'
+			},
+			yAxis: {
+				title: {
+					text: 'Statistical Significance (%)'
+				}
+
+			},
+			legend: {
+				enabled: false
+			},
+			plotOptions: {
+				series: {
+					borderWidth: 0,
+					dataLabels: {
+						enabled: true,
+						format: '{point.y:.1f}%'
+					}
+				}
+			},
+
+			tooltip: {
+				headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+				pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+			},
+
+			series: [{
+				name: 'Brands',
+				colorByPoint: true,
+				data: [{
+					name: 'Tavg',
+					y:  
+                    (function () {
+                        var output;
+						$.ajax({
+							async: false,
+							url: '/predictivedata',
+							success: function(data){
+								console.log(data);
+                                output = data
+							}
+						})
+                        return 100 * output['corrData']['Tavg'];
+                    }()),
+					drilldown: 'Tavg'
+				}, {
+					name: 'Tmin',
+					y:
+                    (function () {
+                        var output;
+						$.ajax({
+							async: false,
+							url: '/predictivedata',
+							success: function(data){
+								console.log(data);
+                                output = data
+							}
+						})
+                        return 100 * output['corrData']['Tmin'];
+                    }()),
+					drilldown: 'Tmin'
+				}, {
+					name: 'Tmax',
+					y:
+                    (function () {
+                        var output;
+						$.ajax({
+							async: false,
+							url: '/predictivedata',
+							success: function(data){
+								console.log(data);
+                                output = data
+							}
+						})
+                        return 100 * output['corrData']['Tmax'];
+                    }()),
+					drilldown: 'Tmax'
+				}, {
+					name: 'Depart',
+					y:
+                    (function () {
+                        var output;
+						$.ajax({
+							async: false,
+							url: '/predictivedata',
+							success: function(data){
+								console.log(data);
+                                output = data
+							}
+						})
+                        return 100 * output['corrData']['Depart'];
+                    }()),
+					drilldown: 'Depart'
+				}, {
+					name: 'Precipitation',
+					y:
+                    (function () {
+                        var output;
+						$.ajax({
+							async: false,
+							url: '/predictivedata',
+							success: function(data){
+								console.log(data);
+                                output = data
+							}
+						})
+                        return 100 * output['corrData']['PrecipTotal'];
+                    }()),
+					drilldown: 'Precipitation'
+				}, {
+					name: 'Heat',
+					y:
+                    (function () {
+                        var output;
+						$.ajax({
+							async: false,
+							url: '/predictivedata',
+							success: function(data){
+								console.log(data);
+                                output = data
+							}
+						})
+                        return 100 * output['corrData']['Heat'];
+                    }()),
+					drilldown: 'Heat'
+				}]
+			}],
+		});
+      });
+
+    </script>
+
     </body>
 </html>
