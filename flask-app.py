@@ -176,6 +176,37 @@ def get_data_crime():
       crimedataList.append(data)
     return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
 
+@app.route('/crimedata/<dataField>', methods=['GET'])
+def get_field_data_crime(dataField):
+    #Get Appropriate data from Dynamo
+  crimeTable = dynamodb.Table('ChicagoCrime')
+
+  response = crimeTable.scan()
+
+  items = response['Items']
+
+  crimedataList = []
+  dateString = []
+  if len(items) > 0:
+    for item in items:
+      data = {}
+      #split date into Y-M-D for chart
+      dateString = str(item["Date"]).split('/')
+      for i in range(0, len(dateString)):
+        if len(dateString[i]) < 2:
+          dateString[i] = '0' + dateString[i]
+      data["Date"] = int(dateString[2] + dateString[0] + dateString[1])  #for sorting x-axis
+      data["Month"] = int(dateString[0])
+      data["Day"] = int(dateString[1])
+      data["Year"] = int('20' + dateString[2])
+
+      #other data
+      data[dataField] = float(item[dataField])
+      crimedataList.append(data)
+    return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
+  else:
+    return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
+
 
 @app.route('/predictivedata', methods=['GET'])
 def get_data_predictive():
@@ -186,7 +217,6 @@ def get_data_predictive():
   linRegData = r.text
   r = requests.get('http://192.168.10.101:8081/corr')
   corrData = r.text
-
 
   result = jsonify({
           'LinRegData': linRegData,
@@ -200,61 +230,6 @@ def get_data_predictive():
 def predictive_page():
   return render_template('predictive.html')
 
-
-##COMMENT OUT START
-# @app.route('/crime', methods=['GET'])
-# def crime_page():
-
-#   #gets Chicagocrime from DB
-#   crimeTable = dynamodb.Table('ChicagoCrime')
-
-#   response = crimeTable.scan()
-
-#   items = response['Items']
-
-#   crimedataList = []
-
-#   if len(items) > 0:
-#     for item in items:
-#       data = {}
-#       data["Date"] = str(item["Date"])  #Assuming all "dates" will be of entry YEAR-MONTH-DAY e.g. 2017-12-02  #Assuming all "dates" will be of entry YEAR-MONTH-DAY e.g. 2017-12-02
-      # dateString = data["Date"].split('-')
-      # data["Year"] = int(dateString[0])
-      # data["Month"] = int(dateString[1])
-      # data["Day"] = int(datestring[2])
-
-      #rest of data
-#       data["Location: ALLEY"] = int(item["Location: ALLEY"])
-#       data["Location: ALLEY"] = int(item["Location: APARTMENT"])
-#       data["Location: COMMERCIAL / BUSINESS OFFICE"] = float(item["Location: COMMERCIAL / BUSINESS OFFICE"])
-#       data["Location: DEPARTMENT STORE"] = int(item["Location: DEPARTMENT STORE"])
-#       data["Location: GAS STATION"] = int(item["Location: GAS STATION"])
-#       data["Location: GROCERY FOOD STORE"] = int(item["Location: GROCERY FOOD STORE"])
-#       data["Location: OTHER"] = int(item["Location: OTHER"])
-#       data["Location: PARK PROPERTY"] = int(item["Location: PARK PROPERTY"])
-#       data["Location: PARKING LOT/GARAGE(NON.RESID.)"] = int(item["Location: PARKING LOT/GARAGE(NON.RESID.)"])
-#       data["Location: RESIDENCE"] = int(item["Location: RESIDENCE"])
-#       data["Location: RESIDENCE PORCH/HALLWAY"] = int(item["Location: RESIDENCE PORCH/HALLWAY"])
-#       data["Location: RESIDENCE-GARAGE"] = int(item["Location: RESIDENCE-GARAGE"])
-#       data["Location: RESTAURANT"] = int(item["Location: RESTAURANT"])
-#       data["Location: SCHOOL, PUBLIC, BUILDING"] = int(item["Location: SCHOOL, PUBLIC, BUILDING"])
-#       data["Location: SIDEWALK"] = int(item["Location: SIDEWALK"])
-#       data["Location: SMALL RETAIL STORE"] = int(item["Location: SMALL RETAIL STORE"])
-#       data["Location: STREET"] = int(item["Location: STREET"])
-#       data["Location: VEHICLE NON-COMMERCIAL"] = int(item["Location: VEHICLE NON-COMMERCIAL"])
-#       data["Total Crimes"] = int(item["Total Crimes"])
-#     crimedataList.append(data)
-
-#   #example how to get from DB
-#   #data is saved as an Array of JSONs
-#     return render_template('crime.html')
-
-
-# @app.route('/predictive', methods=['GET'])
-# def predictive_page():
-
-#     return render_template('predictive.html')
-#COMMENT OUT END
 #addional routes may be needed for interactivity
 
 

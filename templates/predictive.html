@@ -116,17 +116,17 @@
 				type: 'column'
 			},
 			title: {
-				text: 'Browser market shares. January, 2015 to May, 2015'
+				text: 'Which Weather Correlations Affected Crime the Most?'
 			},
 			subtitle: {
-				text: 'Click the columns to view versions. Source: <a href="http://netmarketshare.com">netmarketshare.com</a>.'
+				text: 'The Relative Statistical Significance of each Weather Feature'
 			},
 			xAxis: {
 				type: 'category'
 			},
 			yAxis: {
 				title: {
-					text: 'Total percent market share'
+					text: 'Statistical Significance (%)'
 				}
 
 			},
@@ -164,7 +164,7 @@
                                 output = data
 							}
 						})
-                        return output['corrData']['Tavg'];
+                        return 100 * output['corrData']['Tavg'];
                     }()),
 					drilldown: 'Tavg'
 				}, {
@@ -180,7 +180,7 @@
                                 output = data
 							}
 						})
-                        return output['corrData']['Tmin'];
+                        return 100 * output['corrData']['Tmin'];
                     }()),
 					drilldown: 'Tmin'
 				}, {
@@ -196,7 +196,7 @@
                                 output = data
 							}
 						})
-                        return output['corrData']['Tmax'];
+                        return 100 * output['corrData']['Tmax'];
                     }()),
 					drilldown: 'Tmax'
 				}, {
@@ -212,7 +212,7 @@
                                 output = data
 							}
 						})
-                        return output['corrData']['Depart'];
+                        return 100 * output['corrData']['Depart'];
                     }()),
 					drilldown: 'Depart'
 				}, {
@@ -228,7 +228,7 @@
                                 output = data
 							}
 						})
-                        return output['corrData']['PrecipTotal'];
+                        return 100 * output['corrData']['PrecipTotal'];
                     }()),
 					drilldown: 'Precipitation'
 				}, {
@@ -244,7 +244,7 @@
                                 output = data
 							}
 						})
-                        return output['corrData']['Heat'];
+                        return 100 * output['corrData']['Heat'];
                     }()),
 					drilldown: 'Heat'
 				}]
