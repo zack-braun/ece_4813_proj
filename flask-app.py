@@ -242,6 +242,31 @@ def crimeResidentialdata_page():
 def crimeStoresdata_page():
   return render_template('crimeStores.html')
 
+#Crime Types Page 1
+@app.route('/crimeTypes1', methods=['GET'])
+def crimeTypes1data_page():
+  return render_template('crimeTypes1.html')
+
+#Crime Types Page 2
+@app.route('/crimeTypes2', methods=['GET'])
+def crimeTypes2data_page():
+  return render_template('crimeTypes2.html')
+
+#Crime Types Page 3
+@app.route('/crimeTypes3', methods=['GET'])
+def crimeTypes3data_page():
+  return render_template('crimeTypes3.html')
+
+#Crime Types Page 4
+@app.route('/crimeTypes4', methods=['GET'])
+def crimeTypes4data_page():
+  return render_template('crimeTypes4.html')
+
+#Total Crimes Chart
+@app.route('/crimeTotal', methods=['GET'])
+def crimeTotaldata_page():
+  return render_template('crimeTotal.html')
+
 
 #Predictive Routes
 @app.route('/kmeansClusters', methods = ['GET'])
