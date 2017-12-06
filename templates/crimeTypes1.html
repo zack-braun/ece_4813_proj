@@ -1,0 +1,373 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Chicago Crime Details</title>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+        <script src="https://code.highcharts.com/stock/highstock.js"></script>
+        <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="https://code.highcharts.com/modules/series-label.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    </head>
+    <style>
+    .spacer {
+        height: 60px;
+    }
+    </style>
+    <body>
+        <center>
+            <h1>Chicago Crime Details - Public Areas (Dec. 2004 - Dec. 2014)</h1>
+            <h4><a href="/">Home</a></h4>
+            <br>
+            <h4><a href="/crime">Crimes in Public Areas</a> | <a href = "/crimeResidential">Crimes in Residential Areas</a> | <a href = "/crimeStores">Crimes in Stores and Restaurants</a></h4>
+            <br>
+            <h4>Types of Crime: <a href="/crimeTypes1">Page 1</a> | <a href = "/crimeTypes2">Page 2</a> | <a href = "/crimeTypes3">Page 3</a> | <a href = "/crimeTypes4">Page 4</a></h4>
+            <br>
+            <h4><a href="/crimeTotal">Total Number of Crimes</a></h4>
+
+        </center>
+
+		<div id="containerASSAULT" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerBATTERY" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerBURGLARY" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerCRIM_SEXUAL_ASSAULT" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerCRIMINAL_DAMAGE" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+		<script>
+	        $(document).ready(function () {
+
+				//Assault
+				window.chart1 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerASSAULT"
+	                },
+	                title: {
+	                    text: 'Assault'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Assault</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Assault",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_ASSAULT");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_ASSAULT]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Battery
+				window.chart2 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerBATTERY"
+	                },
+	                title: {
+	                    text: 'Battery'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Battery</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Battery",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_BATTERY");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_BATTERY]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Burglary
+				window.chart3 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerBURGLARY"
+	                },
+	                title: {
+	                    text: 'Burglary'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Burglary</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Burglary",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_BURGLARY");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_BURGLARY]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Criminal Sexual Assault
+				window.chart4 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerCRIM_SEXUAL_ASSAULT"
+	                },
+	                title: {
+	                    text: 'Criminal Sexual Assault'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Criminal Sexual Assault</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Criminal Sexual Assault",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_CRIM_SEXUAL_ASSAULT");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_CRIM_SEXUAL_ASSAULT]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Criminal Damage
+				window.chart5 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerCRIMINAL_DAMAGE"
+	                },
+	                title: {
+	                    text: 'Criminal Damage'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Criminal Damage</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Criminal Damage",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_CRIMINAL_DAMAGE");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_CRIMINAL_DAMAGE]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+			});
+        </script>
+    </body>
+</html>
