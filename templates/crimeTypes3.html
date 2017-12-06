@@ -1,0 +1,373 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Chicago Crime Details</title>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+        <script src="https://code.highcharts.com/stock/highstock.js"></script>
+        <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="https://code.highcharts.com/modules/series-label.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    </head>
+    <style>
+    .spacer {
+        height: 60px;
+    }
+    </style>
+    <body>
+        <center>
+            <h1>Chicago Crime Details - Crime Types (Dec. 2004 - Dec. 2014)</h1>
+            <h4><a href="/">Home</a></h4>
+            <br>
+            <h4><a href="/crime">Crimes in Public Areas</a> | <a href = "/crimeResidential">Crimes in Residential Areas</a> | <a href = "/crimeStores">Crimes in Stores and Restaurants</a></h4>
+            <br>
+            <h4>Types of Crime: <a href="/crimeTypes1">Page 1</a> | <a href = "/crimeTypes2">Page 2</a> | <a href = "/crimeTypes3">Page 3</a> | <a href = "/crimeTypes4">Page 4</a></h4>
+            <br>
+            <h4><a href="/crimeTotal">Total Number of Crimes</a></h4>
+
+        </center>
+
+		<div id="containerMOTOR_VEHICLE_THEFT" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerNARCOTICS" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerOFFENSE_INVOLVING_CHILDREN" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerPROSTITUTION" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div class="spacer"></div>
+		<div id="containerPUBLIC_PEACE_VIOLATION" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+		<script>
+	        $(document).ready(function () {
+
+				//Motor Vehicle Theft
+				window.chart1 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerMOTOR_VEHICLE_THEFT"
+	                },
+	                title: {
+	                    text: 'Motor Vehicle Theft'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Motor Vehicle Theft</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Motor Vehicle Theft",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_MOTOR_VEHICLE_THEFT");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_MOTOR_VEHICLE_THEFT]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Narcotics
+				window.chart2 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerNARCOTICS"
+	                },
+	                title: {
+	                    text: 'Narcotics'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Narcotics</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Narcotics",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_NARCOTICS");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_NARCOTICS]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Offenses Involving Children
+				window.chart3 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerOFFENSE_INVOLVING_CHILDREN"
+	                },
+	                title: {
+	                    text: 'Offenses Involving Children'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Offenses Involving Children</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Offenses Involving Children",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_OFFENSE_INVOLVING_CHILDREN");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_OFFENSE_INVOLVING_CHILDREN]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Prostitution
+				window.chart4 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerPROSTITUTION"
+	                },
+	                title: {
+	                    text: 'Prostitution'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Prostitution</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Prostitution",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_PROSTITUTION");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_PROSTITUTION]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+				//Public Peace Violation
+				window.chart5 = new Highcharts.stockChart({
+	                chart: {
+	                    renderTo: "containerPUBLIC_PEACE_VIOLATION"
+	                },
+	                title: {
+	                    text: 'Public Peace Violation'
+	                },
+	                xAxis: {
+	                    type: 'datetime',
+	                    dateTimeLabelFormats: {
+	                        month: '%e. %b, %Y',
+	                        year: '%Y'
+	                    },
+	                    title: {
+	                        text: 'Date'
+	                    }
+	                },
+	                yAxis: {
+	                    title: {
+	                        text: 'Number of Crimes'
+	                    },
+	                    min: 0,
+	                    crosshair: true
+	                },
+	                rangeSelector: {
+	                    selected: 1
+	                },
+	                tooltip: {
+	                    formatter: function () {
+	                        return '<b>Public Peace Violation</b><br/>' +
+	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
+	                            Highcharts.numberFormat(this.y, 2);
+	                    },
+	                    headerFormat: '<b>{series.name}</b><br>'
+	                },
+	                plotOptions: {
+	                    series: {
+	                        connectNulls: true
+	                    }
+	                },
+
+	                series: [{
+	                    name: "Public Peace Violation",
+	                    data: (function () {
+	                        var dataPoints = [];
+	                        var urlString = "crimedata/dataField";
+	                        urlString = urlString.replace("dataField","Type_PUBLIC_PEACE_VIOLATION");
+	                        //Use "ajax" instead of "getJSON"; "getJSON" runs code asynchronously, so returning "dataPoints" may return empty array if it runs before getJSON function (probable case)
+	                            $.ajax({
+	                                async: false,
+	                                url: urlString,
+	                                success: function(data){
+	                                    //
+	                                    var i;
+	                                    
+	                                    for (i = 0; i < data.length; i++) {
+	                                        dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Type_PUBLIC_PEACE_VIOLATION]);
+	                                    }
+	                                }
+	                            })
+	                        return dataPoints;
+	                    }())
+	                }]
+	            });
+			});
+        </script>
+    </body>
+</html>
