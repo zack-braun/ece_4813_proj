@@ -25,8 +25,8 @@ import json
 #Source Code for Regression available here: https://spark.apache.org/docs/1.6.1/ml-classification-regression.html
 
 #Enter AWS Credentials
-AWS_KEY="AKIAJMXT2VSYHG7DWQVQ"
-AWS_SECRET="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"
+AWS_KEY=""
+AWS_SECRET=""
 REGION="us-east-2"
 
 # Get the table
@@ -44,6 +44,7 @@ spark = SparkSession.builder \
 sc = spark.sparkContext
 
 app = Flask(__name__, static_url_path="")
+
 
 
 def getWeather():
@@ -110,7 +111,7 @@ def combineData():
 @app.route('/corr', methods=['GET'])
 def corr():
 
-  combinedDataList = combineData()
+  #combinedDataList = combineData()
 
   MLlist = []
   for rows in combinedDataList:
@@ -133,7 +134,7 @@ def corr():
 
 @app.route('/linearreg', methods = ['GET'])
 def linearRegression():
-  combinedDataList = combineData()
+  #combinedDataList = combineData()
   MLlist = []
   for rows in combinedDataList:
     mlData = {}
@@ -172,15 +173,19 @@ def linearRegression():
 
   pandaDF = predictionsA.toPandas()
 
+  actual = pandaDF['label'].tolist()
+  prediction = pandaDF['prediction'].tolist()
+
   return json.dumps({
-          'DF': pandaDF.to_json(),
+          'actual': actual,
+          'prediction': prediction,
           'RMSE': RMSE
          })
 
 @app.route('/gbtreg', methods = ['GET'])
 def gbt():
 
-  combinedDataList = combineData()
+  #combinedDataList = combineData()
   MLlist = []
   for rows in combinedDataList:
     mlData = {}
@@ -216,10 +221,10 @@ def gbt():
   pipeline = Pipeline(stages=[featureIndexer, gbt])
 
   # Train model.  This also runs the indexer.
-  model = pipeline.fit(trainingData)
+  model = pipeline.fit(MLdf)
 
   # Make predictions.
-  predictions = model.transform(testData)
+  predictions = model.transform(MLdf)
 
   # Select example rows to display.
   #predictions.select("prediction", "label", "features").show(5)
@@ -234,17 +239,20 @@ def gbt():
   #print(gbtModel)  # summary only
 
   pandaDF = predictions.toPandas()
+  actual = pandaDF['label'].tolist()
+  prediction = pandaDF['prediction'].tolist()
 
   return json.dumps({
-                      'DF': pandaDF.to_json(),
-                      'treeSize': str(gbtModel),
-                      'RMSE': rmse
-                     })
+          'actual': actual,
+          'prediction': prediction,
+          'treeSize': str(gbtModel),
+          'RMSE': rmse
+         })
 
 @app.route('/rfreg', methods = ['GET'])
 def rfreg():
 
-  combinedDataList = combineData()
+  #combinedDataList = combineData()
   MLlist = []
   for rows in combinedDataList:
     mlData = {}
@@ -280,10 +288,10 @@ def rfreg():
   pipeline = Pipeline(stages=[featureIndexer, rf])
 
   # Train model.  This also runs the indexer.
-  model = pipeline.fit(trainingData)
+  model = pipeline.fit(MLdf)
 
   # Make predictions.
-  predictions = model.transform(testData)
+  predictions = model.transform(MLdf)
 
   # Select example rows to display.
   #predictions.select("prediction", "label", "features").show(5)
@@ -300,8 +308,12 @@ def rfreg():
   pandaDF = predictions.toPandas()
 
 
+  actual = pandaDF['label'].tolist()
+  prediction = pandaDF['prediction'].tolist()
+
   return json.dumps({
-          'DF': pandaDF.to_json(),
+          'actual': actual,
+          'prediction': prediction,
           'treeSize': str(rfModel),
           'RMSE': rmse
          })
@@ -309,7 +321,7 @@ def rfreg():
 
 @app.route('/dectreereg', methods = ['GET'])
 def decTreeReg():
-  combinedDataList = combineData()
+  #combinedDataList = combineData()
   MLlist = []
   for rows in combinedDataList:
     mlData = {}
@@ -345,10 +357,10 @@ def decTreeReg():
   pipeline = Pipeline(stages=[featureIndexer, dt])
 
   # Train model.  This also runs the indexer.
-  model = pipeline.fit(trainingData)
+  model = pipeline.fit(MLdf)
 
   # Make predictions.
-  predictions = model.transform(testData)
+  predictions = model.transform(MLdf)
 
   # Select example rows to display.
   #predictions.select("prediction", "label", "features").show(5,False)
@@ -365,8 +377,12 @@ def decTreeReg():
 
   pandaDF = predictions.toPandas()
 
+  actual = pandaDF['label'].tolist()
+  prediction = pandaDF['prediction'].tolist()
+  print len(prediction)
   return json.dumps({
-          'DF': pandaDF.to_json(),
+          'actual': actual,
+          'prediction': prediction,
           'treeSize': str(treeModel),
           'RMSE': rmse
          })
@@ -374,7 +390,7 @@ def decTreeReg():
 @app.route('/kmeans/<int:cluster>', methods=['GET'])
 def kMeans(cluster):
 
-  combinedDataList = combineData()
+  #combinedDataList = combineData()
 
   MLlist = []
   for rows in combinedDataList:
@@ -433,25 +449,47 @@ def kMeans(cluster):
     centerData['Center ' + str(i) + '  Heat'] = center[1]
     centerData['Center ' + str(i) + '  PrecipTotal'] = center[2]
     centerData['Center ' + str(i) + '  Tavg'] = center[3]
-    centerData['Center ' + str(i) + '  Tmin'] = center[4]
-    centerData['Center ' + str(i) + '  Total Crimes'] = center[5]
+    centerData['Center ' + str(i) + '  Tmax'] = center[4]
+    centerData['Center ' + str(i) + '  Tmin'] = center[5]
+    centerData['Center ' + str(i) + '  Total Crimes'] = center[6]
     centerlist.append(centerData)
     i = i + 1
-
 
   transformed = model.transform(MLdf).select("features", "prediction")
   #transformed.printSchema()
   #transformed.show(50,False)
   pandaDF = transformed.toPandas()
 
+  Tavg = []
+  precip = []
+  crimes = []
+  for item in pandaDF['features'].tolist():
+    Tavg.append(item[3])
+    crimes.append(item[6])
+    precip.append(item[2])
+  cluster = pandaDF['prediction'].tolist()
+
+  clusters = []
+  for x in range(len(centerlist)):
+    clusters.append({
+      'name': 'Cluster' + str(x),
+      'data': [[Tavg[i], crimes[i], precip[i]] for i in range(len(Tavg)) if cluster[i] == x]
+      })
+
+  #print(clusters)
+
   return json.dumps({
-                      'DF': pandaDF.to_json(),
+                      'clusters': clusters,
                       'clusterCenters': centerlist,
                       'WSSSE': wssse
                      })
 
+# GLOBALS ###########
+combinedDataList = combineData();
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', debug = True, port = 8081)
+
+
 
 
 

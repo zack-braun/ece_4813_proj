@@ -7,9 +7,10 @@ from datetime import datetime, timedelta
 import boto3
 import requests
 import json
+import ast
 #Enter AWS Credentials
-AWS_KEY="AKIAJMXT2VSYHG7DWQVQ"
-AWS_SECRET="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"
+AWS_KEY=""
+AWS_SECRET=""
 REGION="us-east-2"
 
 # Get the table
@@ -21,6 +22,9 @@ dynamodb = boto3.resource('dynamodb', aws_access_key_id=AWS_KEY,
 
 
 app = Flask(__name__, static_url_path="")
+
+####Globals
+numCluster = 6;
 
 @app.route('/', methods=['GET'])
 def home_page():
@@ -207,21 +211,38 @@ def get_field_data_crime(dataField):
   else:
     return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
 
+@app.route('/kmeansClusters', methods = ['GET'])
+def kmeansClusters():
+  global numCluster
+  numCluster = request.args.get('quantity')
+  return render_template('predictive.html')
 
 @app.route('/predictivedata', methods=['GET'])
 def get_data_predictive():
+  #print(numCluster)
   #Get Appropriate data from Spark Flask App
-  r = requests.get('http://192.168.10.101:8081/kmeans/6')
-  kmeansData = r.text
-  r = requests.get('http://192.168.10.101:8081/linearreg')
-  linRegData = r.text
-  r = requests.get('http://192.168.10.101:8081/corr')
-  corrData = r.text
+  r = requests.get('http://0.0.0.0:8081/kmeans/' + str(numCluster))
+  kmeansData = ast.literal_eval(r.text)
+  r = requests.get('http://0.0.0.0:8081/linearreg')
+  linRegData = ast.literal_eval(r.text)
+  r = requests.get('http://0.0.0.0:8081/corr')
+  corrData = ast.literal_eval(r.text)
+  r = requests.get('http://0.0.0.0:8081/gbtreg')
+  gbtRegData = ast.literal_eval(r.text)
+  r = requests.get('http://0.0.0.0:8081/rfreg')
+  rfRegData = ast.literal_eval(r.text)
+  r = requests.get('http://0.0.0.0:8081/dectreereg')
+  dectreeRegData = ast.literal_eval(r.text)
 
+
+  print(linRegData)
   result = jsonify({
           'LinRegData': linRegData,
           'kmeansData': kmeansData,
-          'corrData': corrData
+          'corrData': corrData,
+          'gbtRegData': gbtRegData,
+          'rfRegData': rfRegData,
+          'dectreeRegData': dectreeRegData
           })
   return result
 

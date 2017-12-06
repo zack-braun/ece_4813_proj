@@ -7,12 +7,14 @@
         <!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
         <script src="https://code.highcharts.com/modules/series-label.js"></script>
         <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <script src="https://code.highcharts.com/highcharts-3d.js"></script>
     </head>
     <body>
 
         <div id="containerTempVsCrime" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
         <script>
+        var timescale = [];
         $(document).ready(function () {
             //TempVsCrime
             Highcharts.stockChart('containerTempVsCrime', {
@@ -70,9 +72,10 @@
                                 success: function(data){
                                     console.log(data);
                                     var i;
-
                                     for (i = 0; i < data.length; i++) {
                                         dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i].Tavg]);
+                                        //console.log(dataPoints[i])
+                                        timescale.push(Date.UTC(data[i].Year, data[i].Month-1, data[i].Day));
                                     }
                                 }
                             })
@@ -90,7 +93,6 @@
                                 success: function(data){
                                     console.log(data);
                                     var i;
-
                                     for (i = 0; i < data.length; i++) {
                                         dataPoints.push([Date.UTC(data[i].Year, data[i].Month-1, data[i].Day),data[i]['Total Crimes']]);
                                     }
@@ -104,155 +106,367 @@
         });
         </script>
 
-
+        <br>
+        <br>
         <div id="containerCorrelations" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
     <script>
 
       $(document).ready(function () {
-		// Correlation Bar Chart
-		Highcharts.chart('containerCorrelations', {
-			chart: {
-				type: 'column'
-			},
-			title: {
-				text: 'Which Weather Correlations Affected Crime the Most?'
-			},
-			subtitle: {
-				text: 'The Relative Statistical Significance of each Weather Feature'
-			},
-			xAxis: {
-				type: 'category'
-			},
-			yAxis: {
-				title: {
-					text: 'Statistical Significance (%)'
-				}
 
-			},
-			legend: {
-				enabled: false
-			},
-			plotOptions: {
-				series: {
-					borderWidth: 0,
-					dataLabels: {
-						enabled: true,
-						format: '{point.y:.1f}%'
-					}
-				}
-			},
+          $.ajax({
+            url: '/predictivedata',
+            type: 'get',
+            success: function (response) {
+            console.log(response.LinRegData);
+            loadCorrData(response);
+            loadLinRegData(response);
+            loadRSSE(response);
+            loadKmeans(response);
+            },
+            error: function (xhr) {
+              // Do Something to handle error
+              console.log(xhr);
+            }
+          });
+        });
 
-			tooltip: {
-				headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-				pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
-			},
+    function loadCorrData(response){
+  		// Correlation Bar Chart
+  		Highcharts.chart('containerCorrelations', {
+  			chart: {
+  				type: 'column'
+  			},
+  			title: {
+  				text: 'Which Weather Features Affect Crime the Most?'
+  			},
+  			subtitle: {
+  				text: 'The Relative Statistical Significance of each Weather Feature'
+  			},
+  			xAxis: {
+  				type: 'category'
+  			},
+  			yAxis: {
+  				title: {
+  					text: 'Statistical Significance (%)'
+  				}
 
-			series: [{
-				name: 'Brands',
-				colorByPoint: true,
-				data: [{
-					name: 'Tavg',
-					y:  
-                    (function () {
-                        var output;
-						$.ajax({
-							async: false,
-							url: '/predictivedata',
-							success: function(data){
-								console.log(data);
-                                output = data
-							}
-						})
-                        return 100 * output['corrData']['Tavg'];
-                    }()),
-					drilldown: 'Tavg'
-				}, {
-					name: 'Tmin',
-					y:
-                    (function () {
-                        var output;
-						$.ajax({
-							async: false,
-							url: '/predictivedata',
-							success: function(data){
-								console.log(data);
-                                output = data
-							}
-						})
-                        return 100 * output['corrData']['Tmin'];
-                    }()),
-					drilldown: 'Tmin'
-				}, {
-					name: 'Tmax',
-					y:
-                    (function () {
-                        var output;
-						$.ajax({
-							async: false,
-							url: '/predictivedata',
-							success: function(data){
-								console.log(data);
-                                output = data
-							}
-						})
-                        return 100 * output['corrData']['Tmax'];
-                    }()),
-					drilldown: 'Tmax'
-				}, {
-					name: 'Depart',
-					y:
-                    (function () {
-                        var output;
-						$.ajax({
-							async: false,
-							url: '/predictivedata',
-							success: function(data){
-								console.log(data);
-                                output = data
-							}
-						})
-                        return 100 * output['corrData']['Depart'];
-                    }()),
-					drilldown: 'Depart'
-				}, {
-					name: 'Precipitation',
-					y:
-                    (function () {
-                        var output;
-						$.ajax({
-							async: false,
-							url: '/predictivedata',
-							success: function(data){
-								console.log(data);
-                                output = data
-							}
-						})
-                        return 100 * output['corrData']['PrecipTotal'];
-                    }()),
-					drilldown: 'Precipitation'
-				}, {
-					name: 'Heat',
-					y:
-                    (function () {
-                        var output;
-						$.ajax({
-							async: false,
-							url: '/predictivedata',
-							success: function(data){
-								console.log(data);
-                                output = data
-							}
-						})
-                        return 100 * output['corrData']['Heat'];
-                    }()),
-					drilldown: 'Heat'
-				}]
-			}],
-		});
-      });
+  			},
+  			legend: {
+  				enabled: false
+  			},
+  			plotOptions: {
+  				series: {
+  					borderWidth: 0,
+  					dataLabels: {
+  						enabled: true,
+  						format: '{point.y:.1f}%'
+  					}
+  				}
+  			},
 
+  			series: [{
+  				name: 'Weather Feature:',
+  				colorByPoint: true,
+  				data: [{
+  					name: 'Tavg',
+  					y:response.corrData.Tavg * 100,
+  					drilldown: 'Tavg'
+  				}, {
+  					name: 'Tmin',
+  					y:response.corrData.Tmin * 100,
+  					drilldown: 'Tmin'
+  				}, {
+  					name: 'Tmax',
+  					y:response.corrData.Tmax * 100,
+  					drilldown: 'Tmax'
+  				}, {
+  					name: 'Depart',
+  					y:response.corrData.Depart * 100,
+  					drilldown: 'Depart'
+  				}, {
+  					name: 'Precipitation',
+  					y:response.corrData.PrecipTotal * 100,
+  					drilldown: 'Precipitation'
+  				}, {
+  					name: 'Heat',
+  					y:response.corrData.Heat * 100,
+  					drilldown: 'Heat'
+  				}]
+  			}],
+  		});
+    }
     </script>
 
+        <br>
+        <br>
+        <div id="containerLinReg" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+    <script>
+        function loadLinRegData(response){
+            var dataPointsLin = [];
+            var dataPointsAct = [];
+            var dataPointsgbt = [];
+            var dataPointsrf = [];
+            var dataPointsdectree = [];
+
+            //timescale = timescale.slice(0,1003)
+            for(let i = 0; i < response.LinRegData.prediction.length; i++) {
+              dataPointsLin.push([timescale[i],response.LinRegData.prediction[i]]);
+              //console.log(dataPointsPred[i])
+              dataPointsAct.push([timescale[i],response.LinRegData.actual[i]]);
+              dataPointsgbt.push([timescale[i],response.gbtRegData.prediction[i]]);
+              // console.log(response.gbtRegData.prediction.length)
+              dataPointsrf.push([timescale[i],response.rfRegData.prediction[i]]);
+              dataPointsdectree.push([timescale[i],response.dectreeRegData.prediction[i]]);
+            }
+            //LinRegVsActual
+            Highcharts.stockChart('containerLinReg', {
+                title: {
+                    text: 'Predicted Number of Crimes Per Day vs Actual'
+                },
+                subtitle: {
+                    text: 'Regression Techniques Using SparkML'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        month: '%e. %b, %Y',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Number of Crimes'
+                    },
+                    opposite: false,
+                    min: 0,
+                    crosshair: true
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                plotOptions: {
+                    series: {
+                        connectNulls: true
+                    }
+                },
+                series: [{
+                    name: "Linear Regression",
+                    yAxis: 0,
+                    data: dataPointsLin
+                }, {
+                    name: "Gradient-Boosted Tree Regression",
+                    yAxis: 0,
+                    data: dataPointsgbt
+                }, {
+                    name: "Decision Tree Regression",
+                    yAxis: 0,
+                    data: dataPointsdectree
+                }, {
+                    name: "Random Forest Regression",
+                    yAxis: 0,
+                    data: dataPointsrf
+                }, {
+                    name: "Actual",
+                    yAxis: 0,
+                    data: dataPointsAct
+                }]
+            });
+        }
+    </script>
+
+        <br>
+        <br>
+        <div id="containerRMSE" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+    <script>
+      function loadRSSE(response){
+        console.log(response)
+      // Correlation Bar Chart
+      Highcharts.chart('containerRMSE', {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: 'Root Mean Squared Error (RMSE) of Each Regression Technique'
+        },
+        subtitle: {
+          text: 'Amount of Error for Each Regression Technique'
+        },
+        xAxis: {
+          type: 'category'
+        },
+        yAxis: {
+          title: {
+            text: 'RMSE'
+          }
+
+        },
+        legend: {
+          enabled: false
+        },
+        plotOptions: {
+          series: {
+            borderWidth: 0,
+            dataLabels: {
+              enabled: true,
+              format: '{point.y:.1f}'
+            }
+          }
+        },
+
+        series: [{
+          name: 'RMSE',
+          colorByPoint: true,
+          data: [{
+            name: 'Linear Regression',
+            y:response.LinRegData.RMSE,
+            drilldown: 'Linear Regression'
+          }, {
+            name: 'Gradient-Boosted Tree Regression',
+            y:response.gbtRegData.RMSE,
+            drilldown: 'Gradient-Boosted Tree Regression'
+          }, {
+            name: 'Decision Tree Regression',
+            y:response.dectreeRegData.RMSE,
+            drilldown: 'Decision Tree Regression'
+          }, {
+            name: 'Random Forest Regression',
+            y:response.rfRegData.RMSE,
+            drilldown: 'Random Forest Regression'
+          }]
+        }],
+      });
+    }
+        </script>
+
+        <br>
+        <br>
+        <form action="/kmeansClusters">
+        <p>Number of Clusters (between 2 and 100):
+        <input type="number" name="quantity" min="2" max="100"><br>
+        <input type="submit"></p>
+        <div id="containerKmeans" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+    <script>
+      function loadKmeans(response){
+        console.log(response.kmeansData)
+
+        // Give the points a 3D feel by adding a radial gradient
+        Highcharts.setOptions({
+            colors: $.map(Highcharts.getOptions().colors, function (color) {
+                return {
+                    radialGradient: {
+                        cx: 0.4,
+                        cy: 0.3,
+                        r: 0.5
+                    },
+                    stops: [
+                        [0, color],
+                        [1, Highcharts.Color(color).brighten(-0.2).get('rgb')]
+                    ]
+                };
+            })
+        });
+
+        // Set up the chart
+        var chart = new Highcharts.Chart({
+            chart: {
+                renderTo: 'containerKmeans',
+                margin: 100,
+                type: 'scatter3d',
+                options3d: {
+                    enabled: true,
+                    alpha: 10,
+                    beta: 30,
+                    depth: 250,
+                    viewDistance: 5,
+                    fitToPlot: false,
+                    frame: {
+                        bottom: { size: 1, color: 'rgba(0,0,0,0.02)' },
+                        back: { size: 1, color: 'rgba(0,0,0,0.04)' },
+                        side: { size: 1, color: 'rgba(0,0,0,0.06)' }
+                    }
+                }
+            },
+            title: {
+                  text: 'KMeans Clustering: Total Crimes Vs. Average Temperature'
+            },
+            subtitle: {
+                  text: 'KMeans from SparkML'
+            },
+            plotOptions: {
+                scatter: {
+                    width: 10,
+                    height: 10,
+                    depth: 10
+                }
+            },
+            yAxis: {
+                min: 0,
+                max: 1500,
+                title: {
+                  text: 'Number of Crimes'
+                }
+            },
+            xAxis: {
+                min: 0,
+                max: 100,
+                gridLineWidth: 1,
+                title: {
+                  text: 'Average Temperature'
+                }
+            },
+            zAxis: {
+                min: 0,
+                max: 2,
+                showFirstLabel: false,
+                title: {
+                  text: 'Precipitation (Inches)'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            series: response.kmeansData.clusters
+        });
+
+
+        // Add mouse events for rotation
+        $(chart.container).on('mousedown.hc touchstart.hc', function (eStart) {
+            eStart = chart.pointer.normalize(eStart);
+
+            var posX = eStart.chartX,
+                posY = eStart.chartY,
+                alpha = chart.options.chart.options3d.alpha,
+                beta = chart.options.chart.options3d.beta,
+                newAlpha,
+                newBeta,
+                sensitivity = 5; // lower is more sensitive
+
+            $(document).on({
+                'mousemove.hc touchmove.hc': function (e) {
+                    // Run beta
+                    e = chart.pointer.normalize(e);
+                    newBeta = beta + (posX - e.chartX) / sensitivity;
+                    chart.options.chart.options3d.beta = newBeta;
+
+                    // Run alpha
+                    newAlpha = alpha + (e.chartY - posY) / sensitivity;
+                    chart.options.chart.options3d.alpha = newAlpha;
+
+                    chart.redraw(false);
+                },
+                'mouseup touchend': function () {
+                    $(document).off('.hc');
+                }
+            });
+        });
+      }
+        </script>
     </body>
 </html>
