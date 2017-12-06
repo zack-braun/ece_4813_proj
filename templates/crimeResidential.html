@@ -168,13 +168,13 @@
 	                    }())
 	                }]
 	            });
-	            //Residence Porch Hallways
+	            //Residence Porches and Hallways
 				window.chart11 = new Highcharts.stockChart({
 	                chart: {
 	                    renderTo: "containerRESIDENCE_PORCH__HALLWAY"
 	                },
 	                title: {
-	                    text: 'Crimes Occurring in Residence Porch Hallways'
+	                    text: 'Crimes Occurring in Residence Porches and Hallways'
 	                },
 	                xAxis: {
 	                    type: 'datetime',
@@ -198,7 +198,7 @@
 	                },
 	                tooltip: {
 	                    formatter: function () {
-	                        return '<b>Crimes in Residence Porch Hallways</b><br/>' +
+	                        return '<b>Crimes in Residence Porches and Hallways</b><br/>' +
 	                            Highcharts.dateFormat('%Y-%b-%e', this.x) + '<br/>' +
 	                            Highcharts.numberFormat(this.y, 2);
 	                    },
@@ -211,7 +211,7 @@
 	                },
 
 	                series: [{
-	                    name: "Crimes in Residence Porch Hallways",
+	                    name: "Crimes in Residence Porches and Hallways",
 	                    data: (function () {
 	                        var dataPoints = [];
 	                        var urlString = "crimedata/dataField";
