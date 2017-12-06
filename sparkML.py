@@ -22,7 +22,7 @@ from pyspark.ml.feature import VectorIndexer
 from pyspark.ml import Pipeline
 import json
 
-#Source Code for Linear Regression available here: https://spark.apache.org/docs/1.6.1/ml-classification-regression.html
+#Source Code for Regression available here: https://spark.apache.org/docs/1.6.1/ml-classification-regression.html
 
 #Enter AWS Credentials
 AWS_KEY="AKIAJMXT2VSYHG7DWQVQ"
@@ -44,6 +44,7 @@ spark = SparkSession.builder \
 sc = spark.sparkContext
 
 app = Flask(__name__, static_url_path="")
+
 
 def getWeather():
   weatherTable = dynamodb.Table('ChicagoWeather')
@@ -67,6 +68,7 @@ def getWeather():
       data["Tmin"] = int(item["Tmin"])
       weatherdataList.append(data)
   return weatherdataList
+
 
 def getCrime():
   crimeTable = dynamodb.Table('ChicagoCrime')
@@ -131,7 +133,7 @@ def corr():
 
 @app.route('/linearreg', methods = ['GET'])
 def linearRegression():
-
+  classifyCrime()
   combinedDataList = combineData()
   MLlist = []
   for rows in combinedDataList:
@@ -451,6 +453,7 @@ def kMeans(cluster):
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', debug = True, port = 8081)
+
 
 
 
