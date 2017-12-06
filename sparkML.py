@@ -25,8 +25,8 @@ import json
 #Source Code for Linear Regression available here: https://spark.apache.org/docs/1.6.1/ml-classification-regression.html
 
 #Enter AWS Credentials
-AWS_KEY="asd"
-AWS_SECRET="asd+sd"
+AWS_KEY="AKIAJMXT2VSYHG7DWQVQ"
+AWS_SECRET="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"
 REGION="us-east-2"
 
 # Get the table
