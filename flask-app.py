@@ -8,8 +8,8 @@ import boto3
 import requests
 import json
 #Enter AWS Credentials
-AWS_KEY="AKIAJMXT2VSYHG7DWQVQ"
-AWS_SECRET="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"
+AWS_KEY=""
+AWS_SECRET=""
 REGION="us-east-2"
 
 # Get the table
@@ -141,10 +141,22 @@ def get_field_data_weather(dataField):
 def weather_page():
   return render_template('weather.html')
 
+@app.route('/crimedata/<dataField>', methods=['GET'])
+def get_field_data_crime(dataField):
+    #Get Appropriate data from Dynamo
 
-@app.route('/crimedata', methods=['GET'])
-def get_data_crime():
-  #Get Appropriate data from Dynamo
+  #Handle invalid characters in url, i.e. '/', ',', ' '
+  dataFieldNew = dataField.replace('Location_', 'Location: ')
+  dataFieldNew = dataFieldNew.replace('Type_', 'Type: ')
+  dataFieldNew = dataFieldNew.replace('_s_', ' / ')
+  dataFieldNew = dataFieldNew.replace('_c_', ', ')
+  dataFieldNew = dataFieldNew.replace('_p1_', '(')
+  dataFieldNew = dataFieldNew.replace('_p2_', ')')
+  dataFieldNew = dataFieldNew.replace('_x_', '.')
+  dataFieldNew = dataFieldNew.replace('_h_', '-')
+  dataFieldNew = dataFieldNew.replace('__', '/')
+  dataFieldNew = dataFieldNew.replace('_', ' ')
+
   crimeTable = dynamodb.Table('ChicagoCrime')
 
   response = crimeTable.scan()
@@ -167,14 +179,12 @@ def get_data_crime():
       data["Year"] = int('20' + dateString[2])
 
       #other data
-      keys = item.keys()
-      for key in keys:
-        if key == 'Date':
-          pass
-        else:
-          data[key] = int(item[key])
+      data[dataField] = float(item[dataFieldNew])
       crimedataList.append(data)
     return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
+  else:
+    return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
+
 
 @app.route('/crimedata/<dataField>', methods=['GET'])
 def get_field_data_crime(dataField):
@@ -207,6 +217,20 @@ def get_field_data_crime(dataField):
   else:
     return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
 
+#Public Areas/Others Crimes Page
+@app.route('/crime', methods=['GET'])
+def crimedata_page():
+  return render_template('crime.html')
+
+#Residential Crimes Page
+@app.route('/crimeResidential', methods=['GET'])
+def crimeResidentialdata_page():
+  return render_template('crimeResidential.html')
+
+#Stores/Restaurants Crimes Page
+@app.route('/crimeStores', methods=['GET'])
+def crimeStoresdata_page():
+  return render_template('crimeStores.html')
 
 @app.route('/predictivedata', methods=['GET'])
 def get_data_predictive():
