@@ -31,6 +31,8 @@ def home_page():
 
     return render_template('index.html')
 
+
+#Weather Routes
 @app.route('/getPastWeather', methods=['GET'])
 #Get past weather data for the past 30 days
 def get_past_weather():
@@ -76,7 +78,7 @@ def get_forecast():
 
 @app.route('/weatherdata', methods=['GET'])
 def get_data_weather():
-    #Get Appropriate data from Dynamo
+  #Get Appropriate data from Dynamo
   weatherTable = dynamodb.Table('ChicagoWeather')
 
   response = weatherTable.scan()
@@ -112,7 +114,7 @@ def get_data_weather():
 
 @app.route('/weatherdata/<dataField>', methods=['GET'])
 def get_field_data_weather(dataField):
-    #Get Appropriate data from Dynamo
+  #Get Appropriate data from Dynamo
   weatherTable = dynamodb.Table('ChicagoWeather')
 
   response = weatherTable.scan()
@@ -145,9 +147,45 @@ def get_field_data_weather(dataField):
 def weather_page():
   return render_template('weather.html')
 
+
+#Crime Routes
+@app.route('/crimedata', methods=['GET'])
+def get_data_crime():
+  #Get Appropriate data from Dynamo
+  crimeTable = dynamodb.Table('ChicagoCrime')
+  
+  response = crimeTable.scan()
+ 
+  items = response['Items']
+ 
+  crimedataList = []
+  dateString = []
+  if len(items) > 0:
+    for item in items:
+      data = {}
+      #split date into Y-M-D for chart
+      dateString = str(item["Date"]).split('/')
+      for i in range(0, len(dateString)):
+        if len(dateString[i]) < 2:
+          dateString[i] = '0' + dateString[i]
+      data["Date"] = int(dateString[2] + dateString[0] + dateString[1])  #for sorting x-axis
+      data["Month"] = int(dateString[0])
+      data["Day"] = int(dateString[1])
+      data["Year"] = int('20' + dateString[2])
+  
+      #other data
+      keys = item.keys()
+      for key in keys:
+        if key == 'Date':
+          pass
+        else:
+          data[key] = int(item[key])
+      crimedataList.append(data)
+    return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
+
 @app.route('/crimedata/<dataField>', methods=['GET'])
 def get_field_data_crime(dataField):
-    #Get Appropriate data from Dynamo
+  #Get Appropriate data from Dynamo
 
   #Handle invalid characters in url, i.e. '/', ',', ' '
   dataFieldNew = dataField.replace('Location_', 'Location: ')
@@ -189,45 +227,6 @@ def get_field_data_crime(dataField):
   else:
     return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
 
-
-@app.route('/crimedata/<dataField>', methods=['GET'])
-def get_field_data_crime(dataField):
-    #Get Appropriate data from Dynamo
-  crimeTable = dynamodb.Table('ChicagoCrime')
-
-  response = crimeTable.scan()
-
-  items = response['Items']
-
-  crimedataList = []
-  dateString = []
-  if len(items) > 0:
-    for item in items:
-      data = {}
-      #split date into Y-M-D for chart
-      dateString = str(item["Date"]).split('/')
-      for i in range(0, len(dateString)):
-        if len(dateString[i]) < 2:
-          dateString[i] = '0' + dateString[i]
-      data["Date"] = int(dateString[2] + dateString[0] + dateString[1])  #for sorting x-axis
-      data["Month"] = int(dateString[0])
-      data["Day"] = int(dateString[1])
-      data["Year"] = int('20' + dateString[2])
-
-      #other data
-      data[dataField] = float(item[dataField])
-      crimedataList.append(data)
-    return jsonify(sorted(crimedataList, key=lambda k: k["Date"]))
-  else:
-    return jsonify({'Date': 0, 'Year': 0, 'Month': 0, 'Day': 0, dataField: 0})
-
-
-@app.route('/kmeansClusters', methods = ['GET'])
-def kmeansClusters():
-  global numCluster
-  numCluster = request.args.get('quantity')
-  return render_template('predictive.html')
-
 #Public Areas/Others Crimes Page
 @app.route('/crime', methods=['GET'])
 def crimedata_page():
@@ -242,6 +241,15 @@ def crimeResidentialdata_page():
 @app.route('/crimeStores', methods=['GET'])
 def crimeStoresdata_page():
   return render_template('crimeStores.html')
+
+
+#Predictive Routes
+@app.route('/kmeansClusters', methods = ['GET'])
+def kmeansClusters():
+  global numCluster
+  numCluster = request.args.get('quantity')
+  return render_template('predictive.html')
+
 
 
 @app.route('/predictivedata', methods=['GET'])
